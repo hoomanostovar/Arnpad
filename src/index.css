@@ -12,3 +12,225 @@ html, body, #root {
   -webkit-user-select: none;
   touch-action: none;
 }
+
+/* =========================================================================
+   ARNPAD THEMED BUTTON SKINS
+   Inspired by 21st.dev: Pop Button, Colorful Button, Cyber Button,
+   Glass Button, Retro 3D Button and neon outrun styles.
+   Structure: .arn-outer.arn-{skin} > .arn-frame > button.arn-face > .arn-content
+   ========================================================================= */
+
+@keyframes arn-spin { to { transform: rotate(360deg); } }
+@keyframes arn-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes arn-jelly {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.25, 0.75); }
+  45% { transform: scale(0.8, 1.2); }
+  60% { transform: scale(1.1, 0.9); }
+  75% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes arn-scan { from { background-position: 0 0; } to { background-position: 0 8px; } }
+@keyframes arn-glitch {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1.5px, 1px); }
+  50% { transform: translate(1.5px, -1px); }
+  75% { transform: translate(-1px, -1px); }
+}
+@keyframes arn-sheen { from { transform: translateX(0) rotate(25deg); } to { transform: translateX(380%) rotate(25deg); } }
+@keyframes arn-flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.4; }
+}
+@keyframes arn-recpulse {
+  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.75); }
+  70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+@keyframes arn-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+@keyframes arn-wobble { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+
+.arn-outer { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.arn-frame { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.arn-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.arn-content { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
+.arn-icon { display: flex; align-items: center; justify-content: center; }
+
+/* ---------- 1. POP / BUBBLE JELLY (Sakura) ---------- */
+.arn-pop .arn-face {
+  border-radius: 9999px;
+  border: none;
+  background: radial-gradient(circle at 35% 28%, #fff4f8 0%, #ffc8dc 42%, #f78fb3 100%);
+  color: #a3245b;
+  box-shadow: 0 5px 0 #c94f80, 0 9px 14px rgba(80, 0, 40, 0.35);
+  transition: transform 0.18s cubic-bezier(0.3, 1.8, 0.5, 1), box-shadow 0.12s;
+}
+.arn-pop .arn-face:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 7px 0 #c94f80, 0 12px 18px rgba(80, 0, 40, 0.35); }
+.arn-pop .arn-face:active { transform: translateY(4px) scale(0.96); box-shadow: 0 1px 0 #c94f80, 0 2px 4px rgba(80, 0, 40, 0.3); }
+.arn-pop .arn-face:hover .arn-icon { animation: arn-wobble 0.4s ease; }
+.arn-pop.is-on .arn-face {
+  background: radial-gradient(circle at 35% 28%, #ffe0ec 0%, #ff6fa3 45%, #e23a78 100%);
+  color: #fff;
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #a8295c, 0 0 20px rgba(255, 111, 163, 0.75);
+}
+.arn-pop.is-on .arn-face:active { transform: translateY(5px) scale(0.96); }
+.arn-pop.is-on .arn-icon { animation: arn-jelly 0.55s ease; }
+
+/* ---------- 2. PRISM / UNICORN (spinning rainbow ring) ---------- */
+.arn-prism .arn-frame {
+  padding: 2.5px;
+  border-radius: 9999px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.arn-prism .arn-frame::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 0deg, #ff7eb3, #ffd36b, #7ef9ff, #a78bfa, #ff7eb3);
+  animation: arn-spin 5s linear infinite;
+  opacity: 0.5;
+  z-index: -1;
+}
+.arn-prism.is-on .arn-frame::before { opacity: 1; animation-duration: 1.6s; }
+.arn-prism.is-on .arn-frame { box-shadow: 0 0 22px rgba(255, 126, 179, 0.55); }
+.arn-prism .arn-face {
+  border-radius: 9999px;
+  border: none;
+  background: radial-gradient(circle at 50% 30%, #2c1744, #130822);
+  color: #f5c2ff;
+  transition: filter 0.2s, background 0.3s;
+}
+.arn-prism .arn-face:hover { filter: brightness(1.35); }
+.arn-prism .arn-face:active { filter: brightness(0.85); }
+.arn-prism.is-on .arn-face {
+  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.4), rgba(255, 126, 179, 0.6) 45%, rgba(139, 92, 246, 0.75));
+  color: #fff;
+}
+.arn-prism.is-on .arn-icon { animation: arn-breathe 1.6s ease-in-out infinite; filter: drop-shadow(0 0 6px #fff); }
+
+/* ---------- 3. CYBER (chamfered, dotted, scanline) ---------- */
+.arn-cyber .arn-frame {
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.85), rgba(52, 211, 153, 0.25) 50%, rgba(168, 85, 247, 0.75));
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+}
+.arn-cyber .arn-face {
+  border: none;
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background-color: #031319;
+  background-image: radial-gradient(rgba(34, 211, 238, 0.22) 1px, transparent 1.3px);
+  background-size: 5px 5px;
+  color: #67e8f9;
+  font-family: ui-monospace, monospace;
+  transition: background-color 0.15s;
+}
+.arn-cyber .arn-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.06) 0 1px, transparent 1px 4px);
+  animation: arn-scan 0.6s linear infinite;
+  pointer-events: none;
+}
+.arn-cyber .arn-face:hover .arn-icon { animation: arn-glitch 0.22s steps(2) infinite; }
+.arn-cyber .arn-face:active { background-color: #0b3a46; }
+.arn-cyber.is-on { filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.85)); }
+.arn-cyber.is-on .arn-frame { background: linear-gradient(135deg, #cffafe, #22d3ee 50%, #34d399); }
+.arn-cyber.is-on .arn-face { background-color: rgba(8, 72, 88, 0.95); color: #ecfeff; }
+
+/* ---------- 4. GLASS (Celestial frosted glass with sheen) ---------- */
+.arn-glass .arn-face {
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 60%, rgba(192, 170, 253, 0.12));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #e9ddff;
+  box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.08), 0 8px 22px rgba(20, 0, 60, 0.35);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.arn-glass .arn-face::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 35%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: rotate(25deg);
+  pointer-events: none;
+}
+.arn-glass .arn-face:hover::after { animation: arn-sheen 0.9s ease; }
+.arn-glass .arn-face:hover { transform: translateY(-2px); box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.12), 0 12px 26px rgba(20, 0, 60, 0.45); }
+.arn-glass .arn-face:active { transform: scale(0.93); }
+.arn-glass.is-on .arn-face {
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.45), rgba(192, 170, 253, 0.38) 50%, rgba(167, 139, 250, 0.15));
+  border-color: rgba(233, 221, 255, 0.85);
+  color: #fff;
+  box-shadow: 0 0 24px rgba(192, 170, 253, 0.7), inset 0 0 12px rgba(255, 255, 255, 0.3);
+}
+.arn-glass.is-on .arn-icon { animation: arn-float 2.4s ease-in-out infinite; }
+
+/* ---------- 5. RETRO 3D KEYCAP (Sunset Peach) ---------- */
+.arn-retro .arn-face {
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(180deg, #fff6e6, #f2d3a6);
+  color: #7a3b17;
+  box-shadow: 0 6px 0 #c98552, 0 10px 14px rgba(40, 10, 0, 0.45), inset 0 -4px 0 rgba(120, 60, 20, 0.12);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.arn-retro .arn-face:hover { filter: brightness(1.06); }
+.arn-retro .arn-face:active { transform: translateY(5px); box-shadow: 0 1px 0 #c98552, 0 2px 4px rgba(40, 10, 0, 0.4), inset 0 -2px 0 rgba(120, 60, 20, 0.12); }
+.arn-retro.is-on .arn-face {
+  background: linear-gradient(180deg, #ffc27a, #ff7a59);
+  color: #fff;
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #b5482c, 0 0 18px rgba(255, 140, 80, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+.arn-retro.is-on .arn-face:active { transform: translateY(6px); }
+
+/* ---------- 6. NEON OUTRUN (diamond / parallelogram wireframes) ---------- */
+.arn-neon.is-round .arn-frame { transform: rotate(45deg) scale(0.8); }
+.arn-neon.is-round .arn-content { transform: rotate(-45deg); }
+.arn-neon:not(.is-round) .arn-frame { transform: skewX(-12deg); }
+.arn-neon:not(.is-round) .arn-content { transform: skewX(12deg); }
+.arn-neon .arn-face {
+  border-radius: 6px;
+  background: rgba(10, 0, 14, 0.7);
+  border: 2px solid #ff2bd6;
+  color: #ff8ff0;
+  box-shadow: 0 0 8px rgba(255, 43, 214, 0.7), inset 0 0 8px rgba(255, 43, 214, 0.35);
+  transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.arn-neon .arn-icon { filter: drop-shadow(0 0 4px #ff2bd6); }
+.arn-neon .arn-face:hover { animation: arn-flicker 1.2s linear infinite; }
+.arn-neon .arn-face:active { background: rgba(255, 43, 214, 0.28); }
+.arn-neon.is-on .arn-face {
+  border-color: #00e5ff;
+  color: #c9fbff;
+  background: rgba(0, 229, 255, 0.14);
+  box-shadow: 0 0 14px #00e5ff, 0 0 30px rgba(0, 229, 255, 0.45), inset 0 0 12px rgba(0, 229, 255, 0.5);
+}
+.arn-neon.is-on .arn-icon { filter: drop-shadow(0 0 6px #00e5ff); }
+
+/* ---------- Record / danger overrides (shared) ---------- */
+.arn-outer.rec-on .arn-face {
+  background: radial-gradient(circle at 40% 35%, #ffb3be, #f43f5e 55%, #9f1239) !important;
+  color: #fff !important;
+  border-color: #fda4af !important;
+  animation: arn-recpulse 1.2s ease-out infinite;
+}
+.arn-outer.rec-off .arn-face { color: #fb7185 !important; }

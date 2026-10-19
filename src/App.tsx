@@ -64,7 +64,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     badgeText: "NEO-TOKYO // KAWAII ARCADE",
     icon: "🌸",
     bgGradient: "from-[#220d18] via-[#140810] to-[#0a0408]",
-    chassisBg: "bg-[#180a13]/85 backdrop-blur-2xl",
+    chassisBg: "bg-[#180a13]/25 backdrop-blur-[2px]",
     chassisBorder: "border-[#ff7ea5]/40 shadow-[0_0_50px_rgba(255,126,165,0.25)]",
     chassisShape: "rounded-[2.5rem] border-pink-400/50 shadow-[0_0_60px_rgba(255,126,165,0.3)]",
     padBg: "#0f050b",
@@ -84,7 +84,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     badgeText: "IRIDESCENT PRISM // MAGIC SYNTH",
     icon: "🦄",
     bgGradient: "from-purple-950/60 via-slate-950 to-pink-950/50",
-    chassisBg: "bg-slate-950/90 backdrop-blur-2xl",
+    chassisBg: "bg-slate-950/30 backdrop-blur-[2px]",
     chassisBorder: "border-pink-400/40 shadow-[0_0_50px_rgba(244,114,182,0.28)]",
     chassisShape: "rounded-3xl border-pink-400/50 shadow-[0_0_60px_rgba(244,114,182,0.4)]",
     padBg: "#11071c",
@@ -104,7 +104,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     badgeText: "CYBERDECK // SYS.2099",
     icon: "🐱",
     bgGradient: "from-cyan-950/40 via-slate-950 to-emerald-950/40",
-    chassisBg: "bg-[#050e13]/90 backdrop-blur-2xl",
+    chassisBg: "bg-[#050e13]/25 backdrop-blur-[2px]",
     chassisBorder: "border-cyan-400/40 shadow-[0_0_50px_rgba(34,211,238,0.25)]",
     chassisShape: "rounded-xl border-cyan-400/50 shadow-[0_0_60px_rgba(34,211,238,0.3)]",
     padBg: "#031116",
@@ -124,7 +124,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     badgeText: "CELESTIAL VOID // FROSTED GLASS",
     icon: "🌙",
     bgGradient: "from-[#201533] via-[#100a1c] to-[#07040d]",
-    chassisBg: "bg-[#160d24]/90 backdrop-blur-2xl",
+    chassisBg: "bg-[#160d24]/25 backdrop-blur-[2px]",
     chassisBorder: "border-[#c0aafd]/40 shadow-[0_0_50px_rgba(192,170,253,0.25)]",
     chassisShape: "rounded-3xl border-purple-300/40 shadow-[0_0_60px_rgba(192,170,253,0.35)] backdrop-blur-3xl",
     padBg: "#0d0716",
@@ -144,7 +144,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     badgeText: "ANALOG REEL-TO-REEL // VINTAGE 80s",
     icon: "🍑",
     bgGradient: "from-amber-950/40 via-neutral-950 to-rose-950/40",
-    chassisBg: "bg-[#160b07]/90 backdrop-blur-2xl",
+    chassisBg: "bg-[#160b07]/25 backdrop-blur-[2px]",
     chassisBorder: "border-amber-400/40 shadow-[0_0_50px_rgba(251,146,60,0.25)]",
     chassisShape: "rounded-2xl border-amber-500/40 shadow-[0_0_55px_rgba(251,146,60,0.3)]",
     padBg: "#120603",
@@ -164,7 +164,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     badgeText: "HYPER-LASER // 1986 OUTRUN",
     icon: "⚡",
     bgGradient: "from-[#1a0117] via-black to-[#050c1c]",
-    chassisBg: "bg-black/90 backdrop-blur-2xl",
+    chassisBg: "bg-black/30 backdrop-blur-[2px]",
     chassisBorder: "border-[#ff00c8]/40 shadow-[0_0_50px_rgba(255,0,200,0.3)]",
     chassisShape: "rounded-lg border-2 border-[#ff00c8] shadow-[0_0_60px_rgba(255,0,200,0.45)]",
     padBg: "#080108",
@@ -1357,22 +1357,22 @@ export default function KaossPad() {
 
   const currentProgConfig = PROGRAMS.find((p) => p.id === activeProgram) || PROGRAMS[0];
 
-  // Theme-aware Tray Container Styles
+  // Theme-aware Tray Container Styles (Translucent glass reveals animated background right behind buttons)
   const getTrayStyles = () => {
     switch (theme.themeStyle) {
       case "cyber_hex":
-        return "bg-[#040e14]/90 border border-cyan-400/30 rounded-lg shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]";
+        return "bg-black/30 border border-cyan-400/30 rounded-lg backdrop-blur-[2px] shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]";
       case "retro_studio":
-        return "bg-[#160a04]/90 border border-amber-600/30 rounded-xl shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]";
+        return "bg-black/30 border border-amber-600/30 rounded-xl backdrop-blur-[2px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]";
       case "celestial_glass":
-        return "bg-white/5 border border-purple-300/30 rounded-2xl backdrop-blur-2xl shadow-[0_4px_20px_rgba(192,170,253,0.15)]";
+        return "bg-white/10 border border-purple-300/30 rounded-2xl backdrop-blur-[2px] shadow-[0_4px_20px_rgba(192,170,253,0.15)]";
       case "neon_laser":
-        return "bg-black/95 border border-[#ff00c8]/50 rounded-lg shadow-[0_0_15px_rgba(255,0,200,0.2)]";
+        return "bg-black/35 border border-[#ff00c8]/50 rounded-lg backdrop-blur-[2px] shadow-[0_0_15px_rgba(255,0,200,0.2)]";
       case "unicorn_sparkle":
-        return "bg-slate-950/85 border border-pink-400/30 rounded-2xl shadow-[0_0_20px_rgba(244,114,182,0.2)]";
+        return "bg-black/30 border border-pink-400/30 rounded-2xl backdrop-blur-[2px] shadow-[0_0_20px_rgba(244,114,182,0.2)]";
       case "bubble_jelly":
       default:
-        return "bg-black/70 border border-pink-400/25 rounded-2xl shadow-inner backdrop-blur-xl";
+        return "bg-black/30 border border-pink-400/25 rounded-2xl backdrop-blur-[2px] shadow-inner";
     }
   };
 
@@ -1399,18 +1399,18 @@ export default function KaossPad() {
   const getHeaderStyles = () => {
     switch (theme.themeStyle) {
       case "cyber_hex":
-        return "bg-[#040e14]/90 border border-cyan-400/40 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.2)]";
+        return "bg-black/45 border border-cyan-400/40 rounded-lg backdrop-blur-sm shadow-[0_0_15px_rgba(34,211,238,0.2)]";
       case "retro_studio":
-        return "bg-[#180a04]/90 border border-amber-600/40 rounded-xl shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]";
+        return "bg-black/45 border border-amber-600/40 rounded-xl backdrop-blur-sm shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]";
       case "celestial_glass":
-        return "bg-white/5 border border-purple-300/30 rounded-2xl backdrop-blur-2xl shadow-[0_4px_25px_rgba(192,170,253,0.2)]";
+        return "bg-white/10 border border-purple-300/30 rounded-2xl backdrop-blur-sm shadow-[0_4px_25px_rgba(192,170,253,0.2)]";
       case "neon_laser":
-        return "bg-black/95 border-2 border-[#ff00c8]/60 rounded-lg shadow-[0_0_20px_rgba(255,0,200,0.3)]";
+        return "bg-black/45 border-2 border-[#ff00c8]/60 rounded-lg backdrop-blur-sm shadow-[0_0_20px_rgba(255,0,200,0.3)]";
       case "unicorn_sparkle":
-        return "bg-slate-950/90 border border-pink-400/40 rounded-2xl shadow-[0_0_20px_rgba(244,114,182,0.25)]";
+        return "bg-black/45 border border-pink-400/40 rounded-2xl backdrop-blur-sm shadow-[0_0_20px_rgba(244,114,182,0.25)]";
       case "bubble_jelly":
       default:
-        return "bg-black/65 border border-pink-400/30 rounded-2xl shadow-inner backdrop-blur-xl";
+        return "bg-black/45 border border-pink-400/30 rounded-2xl backdrop-blur-sm shadow-inner";
     }
   };
 
