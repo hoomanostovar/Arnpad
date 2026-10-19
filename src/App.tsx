@@ -244,7 +244,22 @@ export default function KaossPad() {
   // Canvas visualizer refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
-  const trailPointsRef = useRef<{ x: number; y: number; alpha: number; radius: number; hue: number }[]>([]);
+  const trailPointsRef = useRef<{
+    x: number;
+    y: number;
+    vx?: number;
+    vy?: number;
+    alpha: number;
+    decay?: number;
+    radius: number;
+    starSize?: number;
+    hue: number;
+    twinkleSpeed?: number;
+    twinklePhase?: number;
+    rotation?: number;
+    rotSpeed?: number;
+    isSixPoint?: boolean;
+  }[]>([]);
 
   // State synchronization refs
   const touchPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -345,8 +360,8 @@ export default function KaossPad() {
 
     // Analyser Node for live visual feedback
     const analyser = ctx.createAnalyser();
-    analyser.fftSize = 64;
-    analyser.smoothingTimeConstant = 0.8;
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.75;
     masterGain.connect(analyser);
     analyser.connect(ctx.destination);
     masterGainRef.current = masterGain;
@@ -622,7 +637,22 @@ export default function KaossPad() {
     }
     updateAudioParams(x, y, true);
 
-    trailPointsRef.current.push({ x, y, alpha: 1.0, radius: 32, hue: themeRef.current.trailHue });
+    trailPointsRef.current.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 0.0015,
+      vy: (Math.random() - 0.5) * 0.0015,
+      alpha: 0.9,
+      decay: 0.02,
+      radius: 8,
+      starSize: 3.2,
+      hue: (themeRef.current.trailHue + Math.random() * 30 - 15 + 360) % 360,
+      twinkleSpeed: 5 + Math.random() * 6,
+      twinklePhase: Math.random() * Math.PI * 2,
+      rotation: Math.random() * Math.PI,
+      rotSpeed: (Math.random() - 0.5) * 0.06,
+      isSixPoint: Math.random() > 0.6,
+    });
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -650,11 +680,20 @@ export default function KaossPad() {
     trailPointsRef.current.push({
       x,
       y,
-      alpha: 1.0,
-      radius: 24,
-      hue: (themeRef.current.trailHue + x * 50) % 360,
+      vx: (Math.random() - 0.5) * 0.002,
+      vy: (Math.random() - 0.5) * 0.002,
+      alpha: 0.85,
+      decay: 0.025,
+      radius: 6,
+      starSize: 2.8,
+      hue: (themeRef.current.trailHue + x * 40 + Math.random() * 20 - 10 + 360) % 360,
+      twinkleSpeed: 5 + Math.random() * 6,
+      twinklePhase: Math.random() * Math.PI * 2,
+      rotation: Math.random() * Math.PI,
+      rotSpeed: (Math.random() - 0.5) * 0.08,
+      isSixPoint: Math.random() > 0.65,
     });
-    if (trailPointsRef.current.length > 45) {
+    if (trailPointsRef.current.length > 60) {
       trailPointsRef.current.shift();
     }
   };
@@ -846,7 +885,8 @@ export default function KaossPad() {
 
     let isRunning = true;
     let animTime = 0;
-    const freqData = new Uint8Array(32);
+    const waveData = new Uint8Array(128);
+    const freqData = new Uint8Array(64);
 
     const render = () => {
       if (!isRunning) return;
@@ -870,9 +910,10 @@ export default function KaossPad() {
       ctx.fillStyle = curTheme.padBg;
       ctx.fillRect(0, 0, width, height);
 
-      // Real-time audio frequency data
+      // Real-time audio waveform and frequency data
       let audioEnergy = 0;
       if (analyserRef.current) {
+        analyserRef.current.getByteTimeDomainData(waveData);
         analyserRef.current.getByteFrequencyData(freqData);
         let sum = 0;
         for (let i = 0; i < freqData.length; i++) {
@@ -881,32 +922,12 @@ export default function KaossPad() {
         audioEnergy = sum / (freqData.length * 255);
       }
 
-      // Live Audio Reactive Waves in background
-      if (audioEnergy > 0.02) {
-        ctx.beginPath();
-        for (let i = 0; i < freqData.length; i++) {
-          const barHeight = (freqData[i] / 255) * (height * 0.35);
-          const x = (width / (freqData.length - 1)) * i;
-          const y = height / 2 - barHeight / 2;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = `${curTheme.primaryAccent}44`;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        ctx.beginPath();
-        for (let i = 0; i < freqData.length; i++) {
-          const barHeight = (freqData[i] / 255) * (height * 0.35);
-          const x = (width / (freqData.length - 1)) * i;
-          const y = height / 2 + barHeight / 2;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = `${curTheme.secondaryAccent}33`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
+      // Tempo BPM rhythm calculations
+      const beatsPerSec = bpm / 60;
+      const tempoPhase = (animTime * beatsPerSec * Math.PI) % Math.PI;
+      const tempoPulse = Math.pow(Math.sin(tempoPhase), 5); // rhythmic punch on each beat
+      const centerX = width / 2;
+      const centerY = height / 2;
 
       // Aesthetic cyber grid lines
       const gridCols = 10;
@@ -915,6 +936,7 @@ export default function KaossPad() {
       ctx.lineWidth = 1;
 
       for (let i = 1; i < gridCols; i++) {
+        if (i === gridCols / 2) continue; // Skip center to keep vertical division clean
         const gx = (width / gridCols) * i;
         ctx.beginPath();
         ctx.moveTo(gx, 0);
@@ -923,6 +945,7 @@ export default function KaossPad() {
       }
 
       for (let j = 1; j < gridRows; j++) {
+        if (j === gridRows / 2) continue; // Skip center to keep audio line clean
         const gy = (height / gridRows) * j;
         ctx.beginPath();
         ctx.moveTo(0, gy);
@@ -930,41 +953,155 @@ export default function KaossPad() {
         ctx.stroke();
       }
 
-      // Center glowing crosshairs
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-      ctx.setLineDash([4, 6]);
+      // 1. Interactive Horizontal Centerline: Audio Waveform giving feedback across the ENTIRE screen
+      const waveLen = waveData.length;
+
+      // Soft ambient glow fill between upper and lower wave when audio is active
+      if (audioEnergy > 0.015) {
+        ctx.save();
+        const waveGrad = ctx.createLinearGradient(0, centerY - height * 0.24, 0, centerY + height * 0.24);
+        waveGrad.addColorStop(0, `${curTheme.primaryAccent}15`);
+        waveGrad.addColorStop(0.5, `${curTheme.secondaryAccent}25`);
+        waveGrad.addColorStop(1, `${curTheme.primaryAccent}15`);
+        ctx.fillStyle = waveGrad;
+        ctx.beginPath();
+        for (let i = 0; i < waveLen; i++) {
+          const x = (width / (waveLen - 1)) * i;
+          const rawWave = (waveData[i] - 128) / 128;
+          const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
+          const y = centerY - waveAmp;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        for (let i = waveLen - 1; i >= 0; i--) {
+          const x = (width / (waveLen - 1)) * i;
+          const rawWave = (waveData[i] - 128) / 128;
+          const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
+          const y = centerY + waveAmp;
+          ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Upper dynamic audio wave spanning left to right
       ctx.beginPath();
-      ctx.moveTo(width / 2, 0);
-      ctx.lineTo(width / 2, height);
-      ctx.moveTo(0, height / 2);
-      ctx.lineTo(width, height / 2);
+      for (let i = 0; i < waveLen; i++) {
+        const x = (width / (waveLen - 1)) * i;
+        const rawWave = (waveData[i] - 128) / 128;
+        const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
+        const restingShimmer = audioEnergy > 0.015 ? 0 : Math.sin(animTime * 2.5 + (i / waveLen) * Math.PI * 4) * 1.5;
+        const y = centerY - waveAmp - restingShimmer;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `${curTheme.primaryAccent}99`;
+      ctx.lineWidth = 2.0;
+      ctx.stroke();
+
+      // Lower mirrored harmonic audio wave spanning left to right
+      ctx.beginPath();
+      for (let i = 0; i < waveLen; i++) {
+        const x = (width / (waveLen - 1)) * i;
+        const rawWave = (waveData[i] - 128) / 128;
+        const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
+        const restingShimmer = audioEnergy > 0.015 ? 0 : Math.sin(animTime * 2.5 + (i / waveLen) * Math.PI * 4) * 1.5;
+        const y = centerY + waveAmp + restingShimmer;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `${curTheme.secondaryAccent}77`;
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      // 2. Vertical Division Line: Pulsating with Tempo & Interactive Beat Effects
+      const vertAlpha = 0.08 + tempoPulse * 0.36 + audioEnergy * 0.18;
+      ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 75%, ${vertAlpha})`;
+      ctx.lineWidth = 1.0 + tempoPulse * 1.5;
+      ctx.setLineDash([tempoPulse > 0.4 ? 3 : 5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(centerX, 0);
+      ctx.lineTo(centerX, height);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Continuously spawn magical orbiting sparkles when finger is touching/held
+      // Traveling light beacon moving vertically in sync with tempo
+      const beadY = (Math.sin(animTime * beatsPerSec * Math.PI) * 0.5 + 0.5) * height;
+      const beadGrad = ctx.createRadialGradient(centerX, beadY, 1, centerX, beadY, 14);
+      beadGrad.addColorStop(0, "#ffffff");
+      beadGrad.addColorStop(0.35, curTheme.secondaryAccent);
+      beadGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = beadGrad;
+      ctx.beginPath();
+      ctx.arc(centerX, beadY, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Quarter-interval tick notches along the vertical line
+      const tickHeights = [0.25, 0.5, 0.75];
+      ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 80%, ${0.15 + tempoPulse * 0.4})`;
+      ctx.lineWidth = 1.5;
+      for (const th of tickHeights) {
+        const ty = height * th;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 8 - tempoPulse * 6, ty);
+        ctx.lineTo(centerX + 8 + tempoPulse * 6, ty);
+        ctx.stroke();
+      }
+
+      // Center intersection crystal diamond node
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      const nodeSize = 3.5 + tempoPulse * 3.5 + audioEnergy * 4;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(0, -nodeSize);
+      ctx.quadraticCurveTo(0, 0, nodeSize, 0);
+      ctx.quadraticCurveTo(0, 0, 0, nodeSize);
+      ctx.quadraticCurveTo(0, 0, -nodeSize, 0);
+      ctx.quadraticCurveTo(0, 0, 0, -nodeSize);
+      ctx.fill();
+      ctx.restore();
+
+      // 3. Continuously spawn random drifting twinkling sparkles when touching/held
       const currentPos = touchPosRef.current;
       if (currentPos) {
-        if (Math.random() < 0.8) {
+        for (let s = 0; s < 2; s++) {
           const angle = Math.random() * Math.PI * 2;
-          const dist = 10 + Math.random() * 55;
+          const dist = 3 + Math.random() * 45;
+          const driftAngle = Math.random() * Math.PI * 2;
+          const driftSpeed = 0.25 + Math.random() * 0.75;
           trailPointsRef.current.push({
             x: currentPos.x + (Math.cos(angle) * dist) / width,
             y: currentPos.y + (Math.sin(angle) * dist) / height,
-            alpha: 1.0,
-            radius: 12 + Math.random() * 16,
-            hue: (curTheme.trailHue + Math.sin(animTime * 2.5) * 50 + Math.random() * 40) % 360,
+            vx: (Math.cos(driftAngle) * driftSpeed) / width,
+            vy: (Math.sin(driftAngle) * driftSpeed) / height,
+            alpha: 0.95,
+            decay: 0.018 + Math.random() * 0.014,
+            radius: 5 + Math.random() * 9,
+            starSize: 2.2 + Math.random() * 3.2,
+            hue: (curTheme.trailHue + (Math.random() * 60 - 30) + 360) % 360,
+            twinkleSpeed: 4 + Math.random() * 7,
+            twinklePhase: Math.random() * Math.PI * 2,
+            rotation: Math.random() * Math.PI,
+            rotSpeed: (Math.random() - 0.5) * 0.08,
+            isSixPoint: Math.random() > 0.65,
           });
-          if (trailPointsRef.current.length > 60) {
-            trailPointsRef.current.shift();
-          }
+        }
+        if (trailPointsRef.current.length > 70) {
+          trailPointsRef.current.shift();
         }
       }
 
-      // Render colorful sparkling particle trails and rotating 4-point magic stars
+      // Render drifting fairy dust and randomized diamond stars
       for (let i = trailPointsRef.current.length - 1; i >= 0; i--) {
         const pt = trailPointsRef.current[i];
-        pt.alpha -= 0.022;
-        pt.radius *= 0.965;
+        if (pt.vx) pt.x += pt.vx;
+        if (pt.vy) pt.y += pt.vy;
+        pt.alpha -= pt.decay || 0.02;
+        if (pt.rotation !== undefined && pt.rotSpeed !== undefined) {
+          pt.rotation += pt.rotSpeed;
+        }
 
         if (pt.alpha <= 0) {
           trailPointsRef.current.splice(i, 1);
@@ -974,41 +1111,56 @@ export default function KaossPad() {
         const px = pt.x * width;
         const py = (1 - pt.y) * height;
 
-        // Glowing aura around particle
-        ctx.fillStyle = `hsla(${pt.hue}, 95%, 65%, ${pt.alpha * 0.45})`;
+        const twinkle = Math.sin(animTime * (pt.twinkleSpeed || 5) + (pt.twinklePhase || 0)) * 0.5 + 0.5;
+        const glintAlpha = pt.alpha * (0.4 + twinkle * 0.6);
+
+        // Soft translucent glow halo
+        ctx.fillStyle = `hsla(${pt.hue}, 95%, 70%, ${glintAlpha * 0.25})`;
         ctx.beginPath();
         ctx.arc(px, py, pt.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Rotating 4-point diamond star sparkle
-        const starSize = Math.max(2.5, pt.radius * 0.42 * pt.alpha);
+        // Sharp twinkling diamond star
+        const curStarSize = (pt.starSize || 3.0) * glintAlpha * (0.6 + twinkle * 0.7);
         ctx.save();
         ctx.translate(px, py);
-        ctx.rotate(animTime * 2.2 + pt.hue);
+        ctx.rotate(pt.rotation || 0);
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.moveTo(0, -starSize * 1.3);
-        ctx.quadraticCurveTo(0, 0, starSize, 0);
-        ctx.quadraticCurveTo(0, 0, 0, starSize * 1.3);
-        ctx.quadraticCurveTo(0, 0, -starSize, 0);
-        ctx.quadraticCurveTo(0, 0, 0, -starSize * 1.3);
+        if (pt.isSixPoint) {
+          for (let p = 0; p < 6; p++) {
+            const pAngle = (p * Math.PI) / 3;
+            const sDist = p % 2 === 0 ? curStarSize * 1.4 : curStarSize * 0.45;
+            const sx = Math.cos(pAngle) * sDist;
+            const sy = Math.sin(pAngle) * sDist;
+            if (p === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.closePath();
+        } else {
+          ctx.moveTo(0, -curStarSize * 1.3);
+          ctx.quadraticCurveTo(0, 0, curStarSize, 0);
+          ctx.quadraticCurveTo(0, 0, 0, curStarSize * 1.3);
+          ctx.quadraticCurveTo(0, 0, -curStarSize, 0);
+          ctx.quadraticCurveTo(0, 0, 0, -curStarSize * 1.3);
+        }
         ctx.fill();
         ctx.restore();
       }
 
-      // Active touch pointer: Animated Breathing Glow, Rotating Swirls & Sparkles
+      // Active touch pointer: Soft Translucent Aura & Organic Sparkles (Non-Clockwisey, Less Opaque)
       if (currentPos) {
         const cx = currentPos.x * width;
         const cy = (1 - currentPos.y) * height;
 
-        // 1. Pulsing breathing glowing aura around touch
-        const pulse = Math.sin(animTime * 3.5) * 12;
-        const auraRadius = 90 + pulse + audioEnergy * 70;
+        // 1. Soft Translucent Breathing Aura (Much Less Opaque)
+        const pulse = Math.sin(animTime * 2.5) * 6;
+        const auraRadius = 65 + pulse + audioEnergy * 40;
         const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, auraRadius);
-        grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.15, curTheme.primaryAccent);
-        grad.addColorStop(0.4, curTheme.secondaryAccent);
-        grad.addColorStop(0.7, `${curTheme.primaryAccent}33`);
+        grad.addColorStop(0, "rgba(255, 255, 255, 0.28)");
+        grad.addColorStop(0.2, `${curTheme.primaryAccent}22`);
+        grad.addColorStop(0.55, `${curTheme.secondaryAccent}10`);
+        grad.addColorStop(0.85, `${curTheme.primaryAccent}04`);
         grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
         ctx.fillStyle = grad;
@@ -1016,79 +1168,9 @@ export default function KaossPad() {
         ctx.arc(cx, cy, auraRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // 2. Harmonic sonic ripples expanding outward while touching
-        for (let rIdx = 0; rIdx < 2; rIdx++) {
-          const rDist = ((animTime * 40 + rIdx * 45) % 90);
-          const rAlpha = Math.max(0, 1 - rDist / 90) * 0.45;
-          ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 75%, ${rAlpha})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(cx, cy, rDist, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-
-        // 3. Animated Cosmic Spiral Swirls rotating around the touch center (4 arms)
-        const swirlArms = 4;
-        for (let arm = 0; arm < swirlArms; arm++) {
-          const baseAngle = animTime * 2.4 + (arm * (Math.PI * 2 / swirlArms));
-          ctx.beginPath();
-          for (let r = 8; r <= 56; r += 2) {
-            const theta = baseAngle + r * 0.085;
-            const sx = cx + Math.cos(theta) * r;
-            const sy = cy + Math.sin(theta) * r;
-            if (r === 8) ctx.moveTo(sx, sy);
-            else ctx.lineTo(sx, sy);
-          }
-          ctx.strokeStyle = `hsla(${(curTheme.trailHue + arm * 40) % 360}, 95%, 72%, 0.75)`;
-          ctx.lineWidth = 2.2;
-          ctx.stroke();
-
-          // Satellite diamond star at tip of each swirl arm
-          const tipTheta = baseAngle + 56 * 0.085;
-          const tipX = cx + Math.cos(tipTheta) * 56;
-          const tipY = cy + Math.sin(tipTheta) * 56;
-
-          ctx.save();
-          ctx.translate(tipX, tipY);
-          ctx.rotate(animTime * 3 + arm);
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.moveTo(0, -3.5);
-          ctx.quadraticCurveTo(0, 0, 3.5, 0);
-          ctx.quadraticCurveTo(0, 0, 0, 3.5);
-          ctx.quadraticCurveTo(0, 0, -3.5, 0);
-          ctx.quadraticCurveTo(0, 0, 0, -3.5);
-          ctx.fill();
-          ctx.restore();
-        }
-
-        // 4. Counter-rotating Orbital Ring with Star Nodes
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(-animTime * 1.5);
-        ctx.strokeStyle = `${curTheme.primaryAccent}99`;
-        ctx.lineWidth = 1.2;
-        ctx.setLineDash([3, 6]);
-        ctx.beginPath();
-        ctx.arc(0, 0, 34, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Mini rotating star nodes along the ring
-        for (let s = 0; s < 4; s++) {
-          const sAngle = (s * Math.PI) / 2;
-          const sx = Math.cos(sAngle) * 34;
-          const sy = Math.sin(sAngle) * 34;
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-
-        // 5. Laser crosshairs
-        ctx.strokeStyle = `${curTheme.primaryAccent}bb`;
-        ctx.lineWidth = 1.5;
+        // 2. Delicate Hair-thin Optical Reticle
+        ctx.strokeStyle = `${curTheme.primaryAccent}44`;
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
         ctx.moveTo(cx, 0);
         ctx.lineTo(cx, height);
@@ -1096,16 +1178,40 @@ export default function KaossPad() {
         ctx.lineTo(width, cy);
         ctx.stroke();
 
-        // 6. Glowing Center Jewel & Multi-ring Flare
+        // 3. Organic random diamond glints flashing around the finger (Non-Clockwisey)
+        for (let g = 0; g < 5; g++) {
+          const gAngle = (g * 1.256) + Math.sin(animTime * 1.8 + g * 2) * 0.5;
+          const gDist = 14 + Math.sin(animTime * 2.3 + g * 3) * 10;
+          const gx = cx + Math.cos(gAngle) * gDist;
+          const gy = cy + Math.sin(gAngle) * gDist;
+          const gFlash = Math.max(0, Math.sin(animTime * 3.5 + g * 1.7));
+          if (gFlash > 0.15) {
+            ctx.save();
+            ctx.translate(gx, gy);
+            ctx.rotate(animTime * 2 + g);
+            ctx.fillStyle = `rgba(255, 255, 255, ${gFlash * 0.85})`;
+            const gSize = 2.5 + gFlash * 2.0;
+            ctx.beginPath();
+            ctx.moveTo(0, -gSize);
+            ctx.quadraticCurveTo(0, 0, gSize, 0);
+            ctx.quadraticCurveTo(0, 0, 0, gSize);
+            ctx.quadraticCurveTo(0, 0, -gSize, 0);
+            ctx.quadraticCurveTo(0, 0, 0, -gSize);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        // 4. Delicate Central Jewel Core
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = curTheme.secondaryAccent;
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = `${curTheme.secondaryAccent}88`;
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 9, 0, Math.PI * 2);
         ctx.stroke();
       }
 
@@ -1478,41 +1584,50 @@ export default function KaossPad() {
                     glowColor={theme.primaryAccent}
                     onClick={() => setActivePadSlot(slot)}
                     title={`Select Sample ${slot + 1}: ${sampleNames[slot]}`}
-                    className="w-12 h-12 sm:w-14 sm:h-14 mx-auto"
+                    className="w-9 h-9 sm:w-10 sm:h-10 mx-auto"
                   />
                 );
               })}
 
-              {/* Record and File Row */}
-              <div className="grid grid-cols-2 gap-1.5 pt-1 w-full">
-                {/* Sample Mic Recording Button */}
-                <TactileButton
-                  size="round"
-                  rounded="full"
-                  variant="record"
-                  active={isRecording}
-                  symbol="⏺"
-                  icon={isRecording ? <Square className="w-3.5 h-3.5 fill-current" /> : <Mic className="w-3.5 h-3.5" />}
-                  onClick={toggleRecordSample}
-                  title={isRecording ? "Stop Recording" : "Record Mic into active slot"}
-                  className="w-9 h-9 sm:w-10 sm:h-10 mx-auto"
-                />
+              {/* Master Record and File Upload */}
+              <div className="flex flex-col items-center gap-1.5 pt-1.5 w-full border-t border-white/10">
+                <div className="flex items-center justify-between w-full px-1">
+                  <span className="text-[7.5px] font-mono uppercase tracking-wider text-white/40">
+                    REC / FILE
+                  </span>
+                  <span className={cn("w-1.5 h-1.5 rounded-full", isRecording ? "bg-rose-500 animate-ping" : "bg-white/20")} />
+                </div>
+                
+                <div className="flex items-center justify-center gap-1.5 w-full">
+                  {/* Large Master Record Button */}
+                  <TactileButton
+                    size="round"
+                    rounded="full"
+                    variant="record"
+                    active={isRecording}
+                    symbol="⏺"
+                    icon={isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
+                    onClick={toggleRecordSample}
+                    title={isRecording ? "Stop Recording" : "Record Mic into active slot"}
+                    className="w-12 h-12 sm:w-14 sm:h-14 mx-auto shadow-lg shadow-rose-950/40"
+                  />
 
-                {/* Sample File Upload Button */}
-                <div className="relative group p-0.5 rounded-full bg-black/60 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] border border-white/5 w-9 h-9 sm:w-10 sm:h-10 mx-auto flex items-center justify-center">
-                  <label
-                    title="Load Audio File into active slot"
-                    className={cn(
-                      "relative w-full h-full rounded-full cursor-pointer select-none outline-none font-sans flex items-center justify-center transition-all duration-150 ease-out",
-                      "bg-gradient-to-b from-neutral-800/90 via-neutral-900/95 to-neutral-950 text-white/80",
-                      "border border-t-white/20 border-b-black/80 border-x-white/10",
-                      "shadow-[0_2px_0_#0a0a0f,0_4px_6px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.25)]",
-                      "hover:brightness-115 hover:-translate-y-[1px] active:translate-y-[2px]"
-                    )}
-                  >
-                    <Upload className="w-3.5 h-3.5 text-white/80" />
-                    <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
-                  </label>
+                  {/* Sample File Upload Button */}
+                  <div className="relative group p-0.5 rounded-full bg-black/60 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] border border-white/10 w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 flex items-center justify-center">
+                    <label
+                      title="Load Audio File into active slot"
+                      className={cn(
+                        "relative w-full h-full rounded-full cursor-pointer select-none outline-none font-sans flex items-center justify-center transition-all duration-150 ease-out",
+                        "bg-gradient-to-b from-neutral-800/90 via-neutral-900/95 to-neutral-950 text-white/70",
+                        "border border-white/10",
+                        "shadow-[0_2px_0_#0a0a0f,0_3px_5px_rgba(0,0,0,0.6)]",
+                        "hover:brightness-125 hover:text-white active:translate-y-[1px]"
+                      )}
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>

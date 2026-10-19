@@ -103,12 +103,6 @@ export default function TactileButton({
         }
         {...props}
       >
-        {/* Top Metallic Keycap Sheen */}
-        <div className={cn(
-          "absolute top-0.5 h-[2px] bg-white/25 rounded-full pointer-events-none blur-[0.5px]",
-          rounded === "full" ? "left-3 right-3" : "left-2 right-2"
-        )} />
-
         {/* Status LED Jewel */}
         <div
           className={cn(

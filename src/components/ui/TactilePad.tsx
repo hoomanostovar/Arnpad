@@ -50,17 +50,14 @@ export default function TactilePad({
         title={sampleName ? `Slot ${padNumber}: ${sampleName}` : `Slot ${padNumber}`}
         {...props}
       >
-        {/* Soft top highlight sheen */}
-        <div className="absolute top-1 left-3 right-3 h-[2px] bg-white/25 rounded-full pointer-events-none blur-[0.5px]" />
-
         {/* Center Icon: Animated Vinyl / Pad Disc */}
         <div className="relative flex items-center justify-center pointer-events-none">
           <Disc
             className={cn(
-              "w-6 h-6 sm:w-7 sm:h-7 transition-all duration-300",
+              "w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300",
               active
                 ? "scale-110 text-white drop-shadow-[0_0_10px_currentColor] animate-[spin_6s_linear_infinite]"
-                : "opacity-40 text-neutral-400 group-hover:opacity-80 group-hover:scale-105"
+                : "opacity-45 text-neutral-400 group-hover:opacity-85 group-hover:scale-105"
             )}
             style={active ? { color: glowColor } : undefined}
           />
