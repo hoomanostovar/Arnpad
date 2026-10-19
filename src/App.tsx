@@ -21,8 +21,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import GlowButton, { cn } from "./components/ui/GlowButton";
-import TactileButton from "./components/ui/TactileButton";
+import TactileButton, { type ThemeStyle } from "./components/ui/TactileButton";
 import TactilePad from "./components/ui/TactilePad";
+import AmbientBackground from "./components/AmbientBackground";
 
 // Themes inspired by 21st.dev aesthetic palettes
 export type ThemeId =
@@ -37,10 +38,13 @@ export interface ThemeConfig {
   id: ThemeId;
   name: string;
   tagline: string;
+  themeStyle: ThemeStyle;
+  badgeText: string;
   icon: string;
   bgGradient: string;
   chassisBg: string;
   chassisBorder: string;
+  chassisShape: string;
   padBg: string;
   gridLine: string;
   primaryAccent: string;
@@ -56,10 +60,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     id: "sakura",
     name: "Sakura Dawn",
     tagline: "Cherry blossom blush & rose gold",
+    themeStyle: "bubble_jelly",
+    badgeText: "NEO-TOKYO // KAWAII ARCADE",
     icon: "🌸",
     bgGradient: "from-[#220d18] via-[#140810] to-[#0a0408]",
     chassisBg: "bg-[#180a13]/85 backdrop-blur-2xl",
     chassisBorder: "border-[#ff7ea5]/40 shadow-[0_0_50px_rgba(255,126,165,0.25)]",
+    chassisShape: "rounded-[2.5rem] border-pink-400/50 shadow-[0_0_60px_rgba(255,126,165,0.3)]",
     padBg: "#0f050b",
     gridLine: "rgba(255, 126, 165, 0.12)",
     primaryAccent: "#ff7ea5",
@@ -73,10 +80,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     id: "unicorn",
     name: "Unicorn Sparkle",
     tagline: "Magical magenta & iridescent violet",
+    themeStyle: "unicorn_sparkle",
+    badgeText: "IRIDESCENT PRISM // MAGIC SYNTH",
     icon: "🦄",
     bgGradient: "from-purple-950/60 via-slate-950 to-pink-950/50",
     chassisBg: "bg-slate-950/90 backdrop-blur-2xl",
     chassisBorder: "border-pink-400/40 shadow-[0_0_50px_rgba(244,114,182,0.28)]",
+    chassisShape: "rounded-3xl border-pink-400/50 shadow-[0_0_60px_rgba(244,114,182,0.4)]",
     padBg: "#11071c",
     gridLine: "rgba(244, 114, 182, 0.14)",
     primaryAccent: "#f472b6",
@@ -90,10 +100,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     id: "cyberkitty",
     name: "Cyber Kitty",
     tagline: "Neo-Tokyo cyan & mint matrix",
+    themeStyle: "cyber_hex",
+    badgeText: "CYBERDECK // SYS.2099",
     icon: "🐱",
     bgGradient: "from-cyan-950/40 via-slate-950 to-emerald-950/40",
     chassisBg: "bg-[#050e13]/90 backdrop-blur-2xl",
     chassisBorder: "border-cyan-400/40 shadow-[0_0_50px_rgba(34,211,238,0.25)]",
+    chassisShape: "rounded-xl border-cyan-400/50 shadow-[0_0_60px_rgba(34,211,238,0.3)]",
     padBg: "#031116",
     gridLine: "rgba(34, 211, 238, 0.13)",
     primaryAccent: "#22d3ee",
@@ -107,10 +120,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     id: "pasteldreams",
     name: "Pastel Dreams",
     tagline: "21st.dev dreamy lilac & lavender",
+    themeStyle: "celestial_glass",
+    badgeText: "CELESTIAL VOID // FROSTED GLASS",
     icon: "🌙",
     bgGradient: "from-[#201533] via-[#100a1c] to-[#07040d]",
     chassisBg: "bg-[#160d24]/90 backdrop-blur-2xl",
     chassisBorder: "border-[#c0aafd]/40 shadow-[0_0_50px_rgba(192,170,253,0.25)]",
+    chassisShape: "rounded-3xl border-purple-300/40 shadow-[0_0_60px_rgba(192,170,253,0.35)] backdrop-blur-3xl",
     padBg: "#0d0716",
     gridLine: "rgba(192, 170, 253, 0.13)",
     primaryAccent: "#c0aafd",
@@ -124,10 +140,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     id: "marshmallow",
     name: "Sunset Peach",
     tagline: "Anime golden hour & tangerine glow",
+    themeStyle: "retro_studio",
+    badgeText: "ANALOG REEL-TO-REEL // VINTAGE 80s",
     icon: "🍑",
     bgGradient: "from-amber-950/40 via-neutral-950 to-rose-950/40",
     chassisBg: "bg-[#160b07]/90 backdrop-blur-2xl",
     chassisBorder: "border-amber-400/40 shadow-[0_0_50px_rgba(251,146,60,0.25)]",
+    chassisShape: "rounded-2xl border-amber-500/40 shadow-[0_0_55px_rgba(251,146,60,0.3)]",
     padBg: "#120603",
     gridLine: "rgba(251, 146, 60, 0.13)",
     primaryAccent: "#fb923c",
@@ -141,10 +160,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     id: "neonmagenta",
     name: "Neon Magenta",
     tagline: "High-voltage synthwave & laser cyan",
+    themeStyle: "neon_laser",
+    badgeText: "HYPER-LASER // 1986 OUTRUN",
     icon: "⚡",
     bgGradient: "from-[#1a0117] via-black to-[#050c1c]",
     chassisBg: "bg-black/90 backdrop-blur-2xl",
     chassisBorder: "border-[#ff00c8]/40 shadow-[0_0_50px_rgba(255,0,200,0.3)]",
+    chassisShape: "rounded-lg border-2 border-[#ff00c8] shadow-[0_0_60px_rgba(255,0,200,0.45)]",
     padBg: "#080108",
     gridLine: "rgba(255, 0, 200, 0.15)",
     primaryAccent: "#ff00c8",
@@ -727,8 +749,98 @@ export default function KaossPad() {
     handlePointerUp(e);
   };
 
+  // Synthesized theme-aware UI micro-sound feedback
+  const playUiFeedback = useCallback(
+    (kind?: "click" | "pad" | "tap" | "mod" | "switch") => {
+      try {
+        if (!audioCtxRef.current) {
+          initAudio();
+        }
+        const ctx = audioCtxRef.current;
+        if (!ctx) return;
+        if (ctx.state === "suspended") {
+          ctx.resume().catch(() => {});
+        }
+        const now = ctx.currentTime;
+        const style = themeRef.current.themeStyle;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.connect(ctx.destination);
+
+        if (style === "bubble_jelly") {
+          // Bubble pop: pitch sweep upward
+          osc.type = "sine";
+          const startF = kind === "pad" ? 280 : 380;
+          osc.frequency.setValueAtTime(startF, now);
+          osc.frequency.exponentialRampToValueAtTime(startF * 2.2, now + 0.04);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+          osc.connect(gain);
+          osc.start(now);
+          osc.stop(now + 0.055);
+        } else if (style === "cyber_hex") {
+          // Cyber servo click / square pulse
+          osc.type = "square";
+          const f = kind === "pad" ? 520 : 880;
+          osc.frequency.setValueAtTime(f, now);
+          osc.frequency.exponentialRampToValueAtTime(f * 0.5, now + 0.025);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+          osc.connect(gain);
+          osc.start(now);
+          osc.stop(now + 0.04);
+        } else if (style === "retro_studio") {
+          // Analog tactile thud
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.exponentialRampToValueAtTime(45, now + 0.04);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+          osc.connect(gain);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (style === "celestial_glass") {
+          // Crystal ping
+          osc.type = "sine";
+          const f = kind === "pad" ? 1200 : 1800;
+          osc.frequency.setValueAtTime(f, now);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+          osc.connect(gain);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } else if (style === "neon_laser") {
+          // Outrun laser chirp
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(1600, now);
+          osc.frequency.exponentialRampToValueAtTime(220, now + 0.04);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+          osc.connect(gain);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else {
+          // Unicorn sparkle: magical bell chime
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1320, now + 0.03);
+          gain.gain.setValueAtTime(0.07, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+          osc.connect(gain);
+          osc.start(now);
+          osc.stop(now + 0.065);
+        }
+      } catch {
+        // Ignore audio errors if blocked
+      }
+    },
+    [initAudio]
+  );
+
   // Toggle Hold
   const toggleHold = () => {
+    playUiFeedback("switch");
     const nextHold = !holding;
     setHolding(nextHold);
     if (!nextHold && !isPointerDownRef.current) {
@@ -746,6 +858,7 @@ export default function KaossPad() {
 
   // Toggle Mute
   const toggleMute = () => {
+    playUiFeedback("switch");
     const nextMute = !isMuted;
     setIsMuted(nextMute);
     if (masterGainRef.current && audioCtxRef.current) {
@@ -756,6 +869,7 @@ export default function KaossPad() {
   // Tap tempo
   const lastTapRef = useRef<number>(0);
   const handleTapTempo = () => {
+    playUiFeedback("tap");
     const now = performance.now();
     if (lastTapRef.current > 0) {
       const diff = now - lastTapRef.current;
@@ -773,6 +887,7 @@ export default function KaossPad() {
 
   // Microphone recording
   const toggleRecordSample = async () => {
+    playUiFeedback("switch");
     initAudio();
     if (isRecording) {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
@@ -825,6 +940,7 @@ export default function KaossPad() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    playUiFeedback("switch");
     initAudio();
 
     const reader = new FileReader();
@@ -849,6 +965,7 @@ export default function KaossPad() {
 
   // FX Modulation switch
   const selectModType = (mod: ModType) => {
+    playUiFeedback("mod");
     setActiveModType(mod);
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
@@ -1240,19 +1357,80 @@ export default function KaossPad() {
 
   const currentProgConfig = PROGRAMS.find((p) => p.id === activeProgram) || PROGRAMS[0];
 
+  // Theme-aware Tray Container Styles
+  const getTrayStyles = () => {
+    switch (theme.themeStyle) {
+      case "cyber_hex":
+        return "bg-[#040e14]/90 border border-cyan-400/30 rounded-lg shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]";
+      case "retro_studio":
+        return "bg-[#160a04]/90 border border-amber-600/30 rounded-xl shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]";
+      case "celestial_glass":
+        return "bg-white/5 border border-purple-300/30 rounded-2xl backdrop-blur-2xl shadow-[0_4px_20px_rgba(192,170,253,0.15)]";
+      case "neon_laser":
+        return "bg-black/95 border border-[#ff00c8]/50 rounded-lg shadow-[0_0_15px_rgba(255,0,200,0.2)]";
+      case "unicorn_sparkle":
+        return "bg-slate-950/85 border border-pink-400/30 rounded-2xl shadow-[0_0_20px_rgba(244,114,182,0.2)]";
+      case "bubble_jelly":
+      default:
+        return "bg-black/70 border border-pink-400/25 rounded-2xl shadow-inner backdrop-blur-xl";
+    }
+  };
+
+  // Theme-aware Center Touch Pad Frame Styles
+  const getCenterPadStyles = () => {
+    switch (theme.themeStyle) {
+      case "cyber_hex":
+        return "rounded-lg border-2 border-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.3)]";
+      case "retro_studio":
+        return "rounded-xl border-2 border-amber-600/50 shadow-[0_0_30px_rgba(251,146,60,0.25)]";
+      case "celestial_glass":
+        return "rounded-2xl border-2 border-purple-300/40 shadow-[0_0_35px_rgba(192,170,253,0.3)] backdrop-blur-3xl";
+      case "neon_laser":
+        return "rounded-lg border-2 border-[#ff00c8] shadow-[0_0_40px_rgba(255,0,200,0.4)]";
+      case "unicorn_sparkle":
+        return "rounded-2xl border-2 border-pink-400/50 shadow-[0_0_35px_rgba(244,114,182,0.35)]";
+      case "bubble_jelly":
+      default:
+        return "rounded-3xl border-2 border-pink-400/40 shadow-[0_0_35px_rgba(255,126,165,0.3)]";
+    }
+  };
+
+  // Theme-aware Header Bar Styles
+  const getHeaderStyles = () => {
+    switch (theme.themeStyle) {
+      case "cyber_hex":
+        return "bg-[#040e14]/90 border border-cyan-400/40 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.2)]";
+      case "retro_studio":
+        return "bg-[#180a04]/90 border border-amber-600/40 rounded-xl shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]";
+      case "celestial_glass":
+        return "bg-white/5 border border-purple-300/30 rounded-2xl backdrop-blur-2xl shadow-[0_4px_25px_rgba(192,170,253,0.2)]";
+      case "neon_laser":
+        return "bg-black/95 border-2 border-[#ff00c8]/60 rounded-lg shadow-[0_0_20px_rgba(255,0,200,0.3)]";
+      case "unicorn_sparkle":
+        return "bg-slate-950/90 border border-pink-400/40 rounded-2xl shadow-[0_0_20px_rgba(244,114,182,0.25)]";
+      case "bubble_jelly":
+      default:
+        return "bg-black/65 border border-pink-400/30 rounded-2xl shadow-inner backdrop-blur-xl";
+    }
+  };
+
   return (
     <div
       className={cn(
-        "min-h-screen w-full bg-gradient-to-br flex flex-col items-center justify-center p-1 sm:p-2.5 select-none overflow-hidden touch-none font-sans transition-colors duration-500",
+        "min-h-screen w-full bg-gradient-to-br flex flex-col items-center justify-center p-1 sm:p-2.5 select-none overflow-hidden touch-none font-sans transition-colors duration-500 relative",
         theme.bgGradient
       )}
     >
+      {/* 21st.dev Dynamic Animated Ambient Background in Negative Space */}
+      <AmbientBackground theme={theme} bpm={bpm} />
+
       {/* Main Fullscreen Chassis Container */}
       <div
         className={cn(
-          "w-full max-w-[99vw] h-[98vh] border-2 rounded-3xl p-2 sm:p-3 flex flex-col gap-2 shadow-2xl relative transition-all duration-300",
+          "w-full max-w-[99vw] h-[98vh] border-2 p-2 sm:p-3 flex flex-col gap-2 relative z-10 transition-all duration-300",
           theme.chassisBg,
-          theme.chassisBorder
+          theme.chassisBorder,
+          theme.chassisShape
         )}
       >
         {/* Subtle Decorative Corner Screws */}
@@ -1262,7 +1440,12 @@ export default function KaossPad() {
         <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full border border-white/20 bg-white/10" />
 
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-3 py-1.5 bg-black/60 rounded-2xl border border-white/10 text-xs backdrop-blur-md shadow-inner relative z-30">
+        <div
+          className={cn(
+            "flex items-center justify-between px-3 py-1.5 text-xs backdrop-blur-md shadow-inner relative z-30 transition-all duration-300",
+            getHeaderStyles()
+          )}
+        >
           {/* Logo & Synth Info */}
           <div className="flex items-center gap-2">
             <div className="p-0.5 rounded-xl bg-black/70 border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
@@ -1283,7 +1466,7 @@ export default function KaossPad() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
               </div>
               <span className="text-[8px] font-mono tracking-tighter text-white/50 -mt-0.5">
-                SYNTHESIZER // WORKSTATION
+                {theme.badgeText}
               </span>
             </div>
           </div>
@@ -1322,7 +1505,11 @@ export default function KaossPad() {
             <div className="relative">
               <TactileButton
                 size="sm"
-                onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+                themeStyle={theme.themeStyle}
+                onClick={() => {
+                  playUiFeedback("switch");
+                  setThemeMenuOpen(!themeMenuOpen);
+                }}
                 glowColor={theme.primaryAccent}
                 active={themeMenuOpen}
                 className="h-8 px-2.5"
@@ -1350,6 +1537,7 @@ export default function KaossPad() {
                       <button
                         key={tId}
                         onClick={() => {
+                          playUiFeedback("switch");
                           setCurrentTheme(tId);
                           setThemeMenuOpen(false);
                         }}
@@ -1386,6 +1574,7 @@ export default function KaossPad() {
             {/* Mute Tactile Rocker Button */}
             <TactileButton
               size="sm"
+              themeStyle={theme.themeStyle}
               variant={isMuted ? "danger" : "synth"}
               active={isMuted}
               glowColor="#ef4444"
@@ -1406,14 +1595,25 @@ export default function KaossPad() {
         {/* Central Workspace: Left Icon Column + Main XY Pad + Right Icon Column */}
         <div className="flex-1 flex gap-2 sm:gap-2.5 w-full min-h-0 relative">
           {/* LEFT COLUMN: Programs & Utility Actions (Tactile Keycaps) */}
-          <div className="w-16 sm:w-20 flex flex-col justify-between py-1.5 px-1 bg-black/60 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
+          <div
+            className={cn(
+              "w-16 sm:w-20 flex flex-col justify-between py-1.5 px-1 backdrop-blur-md shadow-inner transition-all duration-300",
+              getTrayStyles()
+            )}
+          >
             {/* Program Selection Keycaps */}
             <div className="flex flex-col gap-2 items-center">
               <div className="flex items-center justify-between w-full px-1">
-                <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider font-bold">
+                <span
+                  className="text-[8px] font-mono uppercase tracking-wider font-bold"
+                  style={{ color: theme.primaryAccent }}
+                >
                   PROG
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: `${theme.primaryAccent}88` }}
+                />
               </div>
               {PROGRAMS.map((prog) => {
                 const isSelected = prog.id === activeProgram;
@@ -1422,12 +1622,14 @@ export default function KaossPad() {
                     key={prog.id}
                     size="round"
                     rounded="full"
+                    themeStyle={theme.themeStyle}
                     active={isSelected}
                     glowColor={theme.primaryAccent}
                     ledColor={isSelected ? theme.primaryAccent : undefined}
                     symbol={prog.symbol}
                     icon={prog.icon}
                     onClick={() => {
+                      playUiFeedback("click");
                       setActiveProgram(prog.id);
                       if (touchPosRef.current) {
                         updateAudioParams(
@@ -1450,6 +1652,7 @@ export default function KaossPad() {
               <TactileButton
                 size="round"
                 rounded="full"
+                themeStyle={theme.themeStyle}
                 variant="amber"
                 symbol="♩"
                 icon={<Zap className="w-4 h-4 text-amber-400" />}
@@ -1462,6 +1665,7 @@ export default function KaossPad() {
               <TactileButton
                 size="round"
                 rounded="full"
+                themeStyle={theme.themeStyle}
                 variant={holding ? "record" : "synth"}
                 active={holding}
                 glowColor={holding ? "#ef4444" : theme.secondaryAccent}
@@ -1476,7 +1680,36 @@ export default function KaossPad() {
           </div>
 
           {/* CENTER: Maximized Interactive XY Touch Surface */}
-          <div className="flex-1 relative h-full rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black flex flex-col justify-between">
+          <div
+            className={cn(
+              "flex-1 relative h-full overflow-hidden shadow-2xl bg-black flex flex-col justify-between transition-all duration-300",
+              getCenterPadStyles()
+            )}
+          >
+            {/* Theme-Specific Decorative Corner Accents */}
+            {theme.themeStyle === "cyber_hex" ? (
+              <>
+                <div className="absolute top-2 left-2 font-mono text-cyan-400/60 text-xs pointer-events-none select-none z-20">┌</div>
+                <div className="absolute top-2 right-2 font-mono text-cyan-400/60 text-xs pointer-events-none select-none z-20">┐</div>
+                <div className="absolute bottom-2 left-2 font-mono text-cyan-400/60 text-xs pointer-events-none select-none z-20">└</div>
+                <div className="absolute bottom-2 right-2 font-mono text-cyan-400/60 text-xs pointer-events-none select-none z-20">┘</div>
+              </>
+            ) : theme.themeStyle === "celestial_glass" ? (
+              <>
+                <div className="absolute top-2 left-2 font-mono text-purple-300/40 text-[10px] pointer-events-none select-none z-20">✦</div>
+                <div className="absolute top-2 right-2 font-mono text-purple-300/40 text-[10px] pointer-events-none select-none z-20">✦</div>
+                <div className="absolute bottom-2 left-2 font-mono text-purple-300/40 text-[10px] pointer-events-none select-none z-20">✦</div>
+                <div className="absolute bottom-2 right-2 font-mono text-purple-300/40 text-[10px] pointer-events-none select-none z-20">✦</div>
+              </>
+            ) : theme.themeStyle === "neon_laser" ? (
+              <>
+                <div className="absolute top-2 left-2 font-mono text-[#ff00c8]/60 text-xs pointer-events-none select-none z-20">+</div>
+                <div className="absolute top-2 right-2 font-mono text-[#ff00c8]/60 text-xs pointer-events-none select-none z-20">+</div>
+                <div className="absolute bottom-2 left-2 font-mono text-[#ff00c8]/60 text-xs pointer-events-none select-none z-20">+</div>
+                <div className="absolute bottom-2 right-2 font-mono text-[#ff00c8]/60 text-xs pointer-events-none select-none z-20">+</div>
+              </>
+            ) : null}
+
             {/* Top Y Axis Metric Tag */}
             <div className="absolute top-2.5 left-3 right-3 flex justify-between items-center pointer-events-none z-10 text-[10px] font-mono tracking-wider">
               <span className="bg-black/75 px-3 py-1 rounded-full border border-white/15 text-white/90 backdrop-blur-md shadow">
@@ -1519,7 +1752,12 @@ export default function KaossPad() {
           </div>
 
           {/* RIGHT COLUMN: Sampler Pads & FX Modulation (Tactile Drum Pads) */}
-          <div className="w-20 sm:w-28 flex flex-col justify-between py-1.5 px-1 bg-black/60 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
+          <div
+            className={cn(
+              "w-20 sm:w-28 flex flex-col justify-between py-1.5 px-1 backdrop-blur-md shadow-inner transition-all duration-300",
+              getTrayStyles()
+            )}
+          >
             {/* Sample Pad Selectors (1 to 4) */}
             <div className="flex flex-col gap-1.5 items-center">
               <div className="flex items-center justify-between w-full px-1">
@@ -1539,8 +1777,12 @@ export default function KaossPad() {
                     padNumber={slot + 1}
                     sampleName={sampleNames[slot]}
                     active={isSelected}
+                    themeStyle={theme.themeStyle}
                     glowColor={theme.primaryAccent}
-                    onClick={() => setActivePadSlot(slot)}
+                    onClick={() => {
+                      playUiFeedback("pad");
+                      setActivePadSlot(slot);
+                    }}
                     title={`Select Sample ${slot + 1}: ${sampleNames[slot]}`}
                     className="w-9 h-9 sm:w-10 sm:h-10 mx-auto"
                   />
@@ -1562,6 +1804,7 @@ export default function KaossPad() {
                     size="round"
                     rounded="full"
                     variant="record"
+                    themeStyle={theme.themeStyle}
                     active={isRecording}
                     symbol="⏺"
                     icon={isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
@@ -1614,6 +1857,7 @@ export default function KaossPad() {
                       key={fx.id}
                       size="round"
                       rounded="full"
+                      themeStyle={theme.themeStyle}
                       active={isActive}
                       glowColor={theme.secondaryAccent}
                       ledColor={isActive ? theme.secondaryAccent : undefined}
