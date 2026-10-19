@@ -1039,10 +1039,10 @@ export default function KaossPad() {
         audioEnergy = sum / (freqData.length * 255);
       }
 
-      // Tempo BPM rhythm calculations
+      // Tempo BPM rhythm calculations (half-speed tempo pulse for calm breathing)
       const beatsPerSec = bpm / 60;
-      const tempoPhase = (animTime * beatsPerSec * Math.PI) % Math.PI;
-      const tempoPulse = Math.pow(Math.sin(tempoPhase), 5); // rhythmic punch on each beat
+      const tempoPhase = (animTime * (beatsPerSec * 0.5) * Math.PI) % Math.PI;
+      const tempoPulse = Math.pow(Math.sin(tempoPhase), 4); // half-speed soft breathing pulse
       const centerX = width / 2;
       const centerY = height / 2;
 
@@ -1104,17 +1104,17 @@ export default function KaossPad() {
         ctx.stroke();
       }
 
-      // 2. Vertical Division Line: Faint horizontal glow pulsating with tempo (no bouncing ball)
-      const glowWidth = 14 + tempoPulse * 28;
+      // 2. Vertical Division Line: 3x wide, half speed, half opacity faint horizontal glow
+      const glowWidth = (14 + tempoPulse * 28) * 3; // 3x wider horizontal glow (42 to 126px)
       const hGlow = ctx.createLinearGradient(centerX - glowWidth, 0, centerX + glowWidth, 0);
       hGlow.addColorStop(0, "rgba(0, 0, 0, 0)");
-      hGlow.addColorStop(0.5, `hsla(${curTheme.trailHue}, 90%, 75%, ${0.03 + tempoPulse * 0.14})`);
+      hGlow.addColorStop(0.5, `hsla(${curTheme.trailHue}, 90%, 75%, ${0.015 + tempoPulse * 0.07})`); // Half opacity
       hGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = hGlow;
       ctx.fillRect(centerX - glowWidth, 0, glowWidth * 2, height);
 
-      // Clean vertical division axis line
-      const vertAlpha = 0.06 + tempoPulse * 0.16 + audioEnergy * 0.08;
+      // Clean vertical division axis line: half opacity
+      const vertAlpha = 0.03 + tempoPulse * 0.08 + audioEnergy * 0.04;
       ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 75%, ${vertAlpha})`;
       ctx.lineWidth = 1.0;
       ctx.setLineDash([4, 6]);
@@ -1124,11 +1124,11 @@ export default function KaossPad() {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Subtle center intersection diamond node
+      // Subtle center intersection diamond node: half opacity
       ctx.save();
       ctx.translate(centerX, centerY);
-      const nodeSize = 2.5 + tempoPulse * 2.0;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      const nodeSize = 1.8 + tempoPulse * 1.0;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
       ctx.beginPath();
       ctx.moveTo(0, -nodeSize);
       ctx.quadraticCurveTo(0, 0, nodeSize, 0);
