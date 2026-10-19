@@ -16,14 +16,25 @@ import {
   Activity,
   Layers,
   Repeat,
+  Radio,
+  Check,
+  ChevronDown,
 } from "lucide-react";
+import GlowButton, { cn } from "./components/ui/GlowButton";
 
-// Themes: Unicorn Sparkle, Cyber Kitty, Sunset Marshmallow
-type ThemeId = "unicorn" | "cyberkitty" | "marshmallow";
+// Themes inspired by 21st.dev aesthetic palettes
+export type ThemeId =
+  | "sakura"
+  | "unicorn"
+  | "cyberkitty"
+  | "pasteldreams"
+  | "marshmallow"
+  | "neonmagenta";
 
-interface ThemeConfig {
+export interface ThemeConfig {
   id: ThemeId;
   name: string;
+  tagline: string;
   icon: string;
   bgGradient: string;
   chassisBg: string;
@@ -32,74 +43,130 @@ interface ThemeConfig {
   gridLine: string;
   primaryAccent: string;
   secondaryAccent: string;
+  tertiaryAccent: string;
   glowColor: string;
-  btnActive: string;
-  btnInactive: string;
   textColor: string;
   trailHue: number;
 }
 
-const THEMES: Record<ThemeId, ThemeConfig> = {
+export const THEMES: Record<ThemeId, ThemeConfig> = {
+  sakura: {
+    id: "sakura",
+    name: "Sakura Dawn",
+    tagline: "Cherry blossom blush & rose gold",
+    icon: "🌸",
+    bgGradient: "from-[#220d18] via-[#140810] to-[#0a0408]",
+    chassisBg: "bg-[#180a13]/85 backdrop-blur-2xl",
+    chassisBorder: "border-[#ff7ea5]/40 shadow-[0_0_50px_rgba(255,126,165,0.25)]",
+    padBg: "#0f050b",
+    gridLine: "rgba(255, 126, 165, 0.12)",
+    primaryAccent: "#ff7ea5",
+    secondaryAccent: "#f43f5e",
+    tertiaryAccent: "#ffdbe4",
+    glowColor: "#ff7ea5",
+    textColor: "text-pink-100",
+    trailHue: 345,
+  },
   unicorn: {
     id: "unicorn",
     name: "Unicorn Sparkle",
+    tagline: "Magical magenta & iridescent violet",
     icon: "🦄",
-    bgGradient: "from-pink-900/40 via-purple-950/60 to-indigo-950",
-    chassisBg: "bg-slate-950/90 backdrop-blur-md",
-    chassisBorder: "border-pink-400/40 shadow-[0_0_40px_rgba(244,114,182,0.25)]",
-    padBg: "#120a1f",
-    gridLine: "rgba(244, 114, 182, 0.15)",
-    primaryAccent: "#f472b6", // pink-400
-    secondaryAccent: "#c084fc", // purple-400
+    bgGradient: "from-purple-950/60 via-slate-950 to-pink-950/50",
+    chassisBg: "bg-slate-950/90 backdrop-blur-2xl",
+    chassisBorder: "border-pink-400/40 shadow-[0_0_50px_rgba(244,114,182,0.28)]",
+    padBg: "#11071c",
+    gridLine: "rgba(244, 114, 182, 0.14)",
+    primaryAccent: "#f472b6",
+    secondaryAccent: "#c084fc",
+    tertiaryAccent: "#818cf8",
     glowColor: "#f472b6",
-    btnActive: "bg-pink-500 text-white shadow-[0_0_15px_rgba(244,114,182,0.8)] border-pink-300",
-    btnInactive: "bg-purple-950/40 text-pink-300 hover:bg-pink-900/40 border-pink-900/50",
     textColor: "text-pink-200",
-    trailHue: 320,
+    trailHue: 315,
   },
   cyberkitty: {
     id: "cyberkitty",
     name: "Cyber Kitty",
+    tagline: "Neo-Tokyo cyan & mint matrix",
     icon: "🐱",
-    bgGradient: "from-cyan-950/40 via-emerald-950/40 to-slate-950",
-    chassisBg: "bg-neutral-950/90 backdrop-blur-md",
-    chassisBorder: "border-cyan-400/40 shadow-[0_0_40px_rgba(34,211,238,0.25)]",
-    padBg: "#05161c",
-    gridLine: "rgba(34, 211, 238, 0.15)",
-    primaryAccent: "#22d3ee", // cyan-400
-    secondaryAccent: "#34d399", // emerald-400
+    bgGradient: "from-cyan-950/40 via-slate-950 to-emerald-950/40",
+    chassisBg: "bg-[#050e13]/90 backdrop-blur-2xl",
+    chassisBorder: "border-cyan-400/40 shadow-[0_0_50px_rgba(34,211,238,0.25)]",
+    padBg: "#031116",
+    gridLine: "rgba(34, 211, 238, 0.13)",
+    primaryAccent: "#22d3ee",
+    secondaryAccent: "#34d399",
+    tertiaryAccent: "#a855f7",
     glowColor: "#22d3ee",
-    btnActive: "bg-cyan-500 text-black font-bold shadow-[0_0_15px_rgba(34,211,238,0.8)] border-cyan-200",
-    btnInactive: "bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/40 border-cyan-900/50",
     textColor: "text-cyan-200",
     trailHue: 185,
+  },
+  pasteldreams: {
+    id: "pasteldreams",
+    name: "Pastel Dreams",
+    tagline: "21st.dev dreamy lilac & lavender",
+    icon: "🌙",
+    bgGradient: "from-[#201533] via-[#100a1c] to-[#07040d]",
+    chassisBg: "bg-[#160d24]/90 backdrop-blur-2xl",
+    chassisBorder: "border-[#c0aafd]/40 shadow-[0_0_50px_rgba(192,170,253,0.25)]",
+    padBg: "#0d0716",
+    gridLine: "rgba(192, 170, 253, 0.13)",
+    primaryAccent: "#c0aafd",
+    secondaryAccent: "#a78bfa",
+    tertiaryAccent: "#f472b6",
+    glowColor: "#c0aafd",
+    textColor: "text-purple-100",
+    trailHue: 265,
   },
   marshmallow: {
     id: "marshmallow",
     name: "Sunset Peach",
+    tagline: "Anime golden hour & tangerine glow",
     icon: "🍑",
-    bgGradient: "from-amber-950/40 via-rose-950/40 to-neutral-950",
-    chassisBg: "bg-stone-950/90 backdrop-blur-md",
-    chassisBorder: "border-amber-400/40 shadow-[0_0_40px_rgba(251,191,36,0.25)]",
-    padBg: "#190f0c",
-    gridLine: "rgba(251, 146, 60, 0.15)",
-    primaryAccent: "#fb923c", // orange-400
-    secondaryAccent: "#f43f5e", // rose-500
+    bgGradient: "from-amber-950/40 via-neutral-950 to-rose-950/40",
+    chassisBg: "bg-[#160b07]/90 backdrop-blur-2xl",
+    chassisBorder: "border-amber-400/40 shadow-[0_0_50px_rgba(251,146,60,0.25)]",
+    padBg: "#120603",
+    gridLine: "rgba(251, 146, 60, 0.13)",
+    primaryAccent: "#fb923c",
+    secondaryAccent: "#f43f5e",
+    tertiaryAccent: "#fbbf24",
     glowColor: "#fb923c",
-    btnActive: "bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-[0_0_15px_rgba(251,146,60,0.8)] border-amber-200",
-    btnInactive: "bg-amber-950/30 text-amber-300 hover:bg-amber-900/40 border-amber-900/50",
-    textColor: "text-amber-200",
+    textColor: "text-amber-100",
     trailHue: 28,
+  },
+  neonmagenta: {
+    id: "neonmagenta",
+    name: "Neon Magenta",
+    tagline: "High-voltage synthwave & laser cyan",
+    icon: "⚡",
+    bgGradient: "from-[#1a0117] via-black to-[#050c1c]",
+    chassisBg: "bg-black/90 backdrop-blur-2xl",
+    chassisBorder: "border-[#ff00c8]/40 shadow-[0_0_50px_rgba(255,0,200,0.3)]",
+    padBg: "#080108",
+    gridLine: "rgba(255, 0, 200, 0.15)",
+    primaryAccent: "#ff00c8",
+    secondaryAccent: "#00e5ff",
+    tertiaryAccent: "#9000ff",
+    glowColor: "#ff00c8",
+    textColor: "text-pink-100",
+    trailHue: 305,
   },
 };
 
-type ProgramMode = "sampler_grain" | "synth_lead" | "bass_wobble" | "ambient_space" | "filter_noise";
+type ProgramMode =
+  | "sampler_grain"
+  | "synth_lead"
+  | "bass_wobble"
+  | "ambient_space"
+  | "filter_noise";
 type ModType = "off" | "flanger" | "tremolo_slicer" | "tape_flutter";
 
 interface ProgramConfig {
   id: ProgramMode;
   name: string;
   label: string;
+  badge: string;
   xLabel: string;
   yLabel: string;
   icon: React.ReactNode;
@@ -116,7 +183,8 @@ const PENTATONIC_FREQS = [
 
 export default function KaossPad() {
   // Theme state
-  const [currentTheme, setCurrentTheme] = useState<ThemeId>("unicorn");
+  const [currentTheme, setCurrentTheme] = useState<ThemeId>("sakura");
+  const [themeMenuOpen, setThemeMenuOpen] = useState<boolean>(false);
   const theme = THEMES[currentTheme];
 
   // Core Pad State
@@ -132,17 +200,18 @@ export default function KaossPad() {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [activePadSlot, setActivePadSlot] = useState<number>(0);
   const [sampleNames, setSampleNames] = useState<string[]>([
-    "Sparkle Chime",
-    "Kitty Sub Drop",
+    "Sakura Chime",
+    "Sub Kitty Drop",
     "Candy Rim Break",
-    "Cloud Stab",
+    "Cloud Stab M9",
   ]);
 
   // Audio Context and Node Refs
   const audioCtxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const touchGainRef = useRef<GainNode | null>(null);
-  
+  const analyserRef = useRef<AnalyserNode | null>(null);
+
   // DSP Nodes
   const osc1Ref = useRef<OscillatorNode | null>(null);
   const osc2Ref = useRef<OscillatorNode | null>(null);
@@ -192,11 +261,11 @@ export default function KaossPad() {
   activePadSlotRef.current = activePadSlot;
   themeRef.current = theme;
 
-  // Synthesize factory cute preset audio buffers
+  // Synthesize factory sustained & loopable presets
   const generateFactoryPresets = useCallback((ctx: AudioContext) => {
     const sRate = ctx.sampleRate;
 
-    // Slot 0: Sparkle Chime / Bell Hit & Drone
+    // Slot 0: Sakura Chime / Sparkling Drone
     const dur0 = 2.0;
     const buf0 = ctx.createBuffer(1, Math.floor(sRate * dur0), sRate);
     const data0 = buf0.getChannelData(0);
@@ -212,7 +281,7 @@ export default function KaossPad() {
     }
     sampleBankRef.current[0] = buf0;
 
-    // Slot 1: Cute Sub Kitty Drop / Bass Tone
+    // Slot 1: Sub Kitty Drop / Bass Synth
     const dur1 = 1.5;
     const buf1 = ctx.createBuffer(1, Math.floor(sRate * dur1), sRate);
     const data1 = buf1.getChannelData(0);
@@ -259,17 +328,26 @@ export default function KaossPad() {
   // Initialize Web Audio graph
   const initAudio = useCallback(() => {
     if (audioCtxRef.current) return;
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new AudioContextClass();
     audioCtxRef.current = ctx;
 
     generateFactoryPresets(ctx);
 
-    // Master
+    // Master Gain
     const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(isMutedRef.current ? 0 : 0.85, ctx.currentTime);
-    masterGain.connect(ctx.destination);
+
+    // Analyser Node for live visual feedback
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 64;
+    analyser.smoothingTimeConstant = 0.8;
+    masterGain.connect(analyser);
+    analyser.connect(ctx.destination);
     masterGainRef.current = masterGain;
+    analyserRef.current = analyser;
 
     // Touch Gate
     const touchGain = ctx.createGain();
@@ -277,7 +355,7 @@ export default function KaossPad() {
     touchGain.connect(masterGain);
     touchGainRef.current = touchGain;
 
-    // Filter
+    // Main Filter
     const filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(1000, ctx.currentTime);
@@ -412,7 +490,7 @@ export default function KaossPad() {
     const now = ctx.currentTime;
     const p = programRef.current;
 
-    // Gate control: only ramp when transition between engaged and disengaged occurs
+    // Gate control: ramp smoothly on state change, never cut off during move
     if (touchGainRef.current) {
       if (isEngaged && !isEngagedRef.current) {
         isEngagedRef.current = true;
@@ -541,7 +619,7 @@ export default function KaossPad() {
     }
     updateAudioParams(x, y, true);
 
-    trailPointsRef.current.push({ x, y, alpha: 1.0, radius: 30, hue: themeRef.current.trailHue });
+    trailPointsRef.current.push({ x, y, alpha: 1.0, radius: 32, hue: themeRef.current.trailHue });
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -570,10 +648,10 @@ export default function KaossPad() {
       x,
       y,
       alpha: 1.0,
-      radius: 22,
-      hue: (themeRef.current.trailHue + x * 60) % 360,
+      radius: 24,
+      hue: (themeRef.current.trailHue + x * 50) % 360,
     });
-    if (trailPointsRef.current.length > 40) {
+    if (trailPointsRef.current.length > 45) {
       trailPointsRef.current.shift();
     }
   };
@@ -605,13 +683,6 @@ export default function KaossPad() {
   const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.buttons === 1 || holdingRef.current) return;
     handlePointerUp(e);
-  };
-
-  // Switch Themes
-  const cycleTheme = () => {
-    const keys: ThemeId[] = ["unicorn", "cyberkitty", "marshmallow"];
-    const nextIdx = (keys.indexOf(currentTheme) + 1) % keys.length;
-    setCurrentTheme(keys[nextIdx]);
   };
 
   // Toggle Hold
@@ -763,7 +834,7 @@ export default function KaossPad() {
     }
   };
 
-  // Canvas 60FPS Reactive Graphics Loop
+  // Canvas 60FPS Reactive Graphics Loop with real-time audio visualization
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -771,6 +842,7 @@ export default function KaossPad() {
     if (!ctx) return;
 
     let isRunning = true;
+    const freqData = new Uint8Array(32);
 
     const render = () => {
       if (!isRunning) return;
@@ -792,6 +864,44 @@ export default function KaossPad() {
       // Dark theme background
       ctx.fillStyle = curTheme.padBg;
       ctx.fillRect(0, 0, width, height);
+
+      // Real-time audio frequency data
+      let audioEnergy = 0;
+      if (analyserRef.current) {
+        analyserRef.current.getByteFrequencyData(freqData);
+        let sum = 0;
+        for (let i = 0; i < freqData.length; i++) {
+          sum += freqData[i];
+        }
+        audioEnergy = sum / (freqData.length * 255);
+      }
+
+      // Live Audio Reactive Waves in background
+      if (audioEnergy > 0.02) {
+        ctx.beginPath();
+        for (let i = 0; i < freqData.length; i++) {
+          const barHeight = (freqData[i] / 255) * (height * 0.35);
+          const x = (width / (freqData.length - 1)) * i;
+          const y = height / 2 - barHeight / 2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `${curTheme.primaryAccent}44`;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        for (let i = 0; i < freqData.length; i++) {
+          const barHeight = (freqData[i] / 255) * (height * 0.35);
+          const x = (width / (freqData.length - 1)) * i;
+          const y = height / 2 + barHeight / 2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `${curTheme.secondaryAccent}33`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
 
       // Aesthetic cyber grid lines
       const gridCols = 10;
@@ -816,7 +926,7 @@ export default function KaossPad() {
       }
 
       // Center glowing crosshairs
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
       ctx.setLineDash([4, 6]);
       ctx.beginPath();
       ctx.moveTo(width / 2, 0);
@@ -829,7 +939,7 @@ export default function KaossPad() {
       // Render colorful sparkling particle trails
       for (let i = trailPointsRef.current.length - 1; i >= 0; i--) {
         const pt = trailPointsRef.current[i];
-        pt.alpha -= 0.03;
+        pt.alpha -= 0.025;
         pt.radius *= 0.96;
 
         if (pt.alpha <= 0) {
@@ -840,7 +950,7 @@ export default function KaossPad() {
         const px = pt.x * width;
         const py = (1 - pt.y) * height;
 
-        ctx.fillStyle = `hsla(${pt.hue}, 90%, 65%, ${pt.alpha * 0.5})`;
+        ctx.fillStyle = `hsla(${pt.hue}, 90%, 65%, ${pt.alpha * 0.55})`;
         ctx.beginPath();
         ctx.arc(px, py, pt.radius, 0, Math.PI * 2);
         ctx.fill();
@@ -849,7 +959,7 @@ export default function KaossPad() {
         if (i % 2 === 0) {
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
-          ctx.arc(px + Math.sin(pt.alpha * 10) * 8, py + Math.cos(pt.alpha * 10) * 8, 2, 0, Math.PI * 2);
+          ctx.arc(px + Math.sin(pt.alpha * 10) * 10, py + Math.cos(pt.alpha * 10) * 10, 2, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -861,15 +971,16 @@ export default function KaossPad() {
         const cy = (1 - currentPos.y) * height;
 
         // Radial glowing aura
-        const grad = ctx.createRadialGradient(cx, cy, 4, cx, cy, 90);
+        const auraRadius = 80 + audioEnergy * 60;
+        const grad = ctx.createRadialGradient(cx, cy, 4, cx, cy, auraRadius);
         grad.addColorStop(0, curTheme.primaryAccent);
-        grad.addColorStop(0.3, curTheme.secondaryAccent);
+        grad.addColorStop(0.35, curTheme.secondaryAccent);
         grad.addColorStop(0.7, `${curTheme.primaryAccent}33`);
         grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+        ctx.arc(cx, cy, auraRadius, 0, Math.PI * 2);
         ctx.fill();
 
         // Crosshairs
@@ -912,185 +1023,292 @@ export default function KaossPad() {
       id: "sampler_grain",
       name: "SAMPLER",
       label: "Touch Sampler",
+      badge: "GRAIN",
       xLabel: "Slice / Start Offset",
       yLabel: "Pitch / Playback Rate",
-      icon: <Music className="w-5 h-5" />,
+      icon: <Music className="w-4 h-4" />,
     },
     {
       id: "synth_lead",
       name: "LEAD",
       label: "Pentatonic Synth",
-      xLabel: "Pitch (Pentatonic)",
+      badge: "PENTA",
+      xLabel: "Pitch (Pentatonic Scale)",
       yLabel: "Cutoff / Resonance",
-      icon: <Zap className="w-5 h-5" />,
+      icon: <Zap className="w-4 h-4" />,
     },
     {
       id: "bass_wobble",
       name: "BASS",
-      label: "Wobble Sub",
-      xLabel: "Sub Note Frequency",
+      label: "Wobble Sub Bass",
+      badge: "SUB",
+      xLabel: "Sub Frequency (42-137 Hz)",
       yLabel: "LFO Speed & Drive",
-      icon: <Activity className="w-5 h-5" />,
+      icon: <Activity className="w-4 h-4" />,
     },
     {
       id: "ambient_space",
       name: "SHIMMER",
-      label: "Space Reverb",
-      xLabel: "Chords / Harmonic Pitch",
+      label: "Ambient Space Reverb",
+      badge: "CHORD",
+      xLabel: "Harmonic Chords",
       yLabel: "Delay Time / Feedback",
-      icon: <Sparkles className="w-5 h-5" />,
+      icon: <Sparkles className="w-4 h-4" />,
     },
     {
       id: "filter_noise",
       name: "NOISE",
-      label: "Vinyl / Resonance",
+      label: "Vinyl / Resonance Sweep",
+      badge: "CRUSH",
       xLabel: "Bandpass Sweep",
-      yLabel: "Noise Crush / Resonance",
-      icon: <Flame className="w-5 h-5" />,
+      yLabel: "Noise Resonance / Q",
+      icon: <Flame className="w-4 h-4" />,
     },
   ];
 
   const currentProgConfig = PROGRAMS.find((p) => p.id === activeProgram) || PROGRAMS[0];
 
   return (
-    <div className={`min-h-screen w-full bg-gradient-to-br ${theme.bgGradient} flex flex-col items-center justify-center p-1 sm:p-2 select-none overflow-hidden touch-none font-sans`}>
+    <div
+      className={cn(
+        "min-h-screen w-full bg-gradient-to-br flex flex-col items-center justify-center p-1 sm:p-2.5 select-none overflow-hidden touch-none font-sans transition-colors duration-500",
+        theme.bgGradient
+      )}
+    >
       {/* Main Fullscreen Chassis Container */}
-      <div className={`w-full max-w-[99vw] h-[98vh] ${theme.chassisBg} border-2 ${theme.chassisBorder} rounded-3xl p-2 sm:p-3 flex flex-col gap-1.5 shadow-2xl relative transition-all duration-300`}>
-        
-        {/* Compact Title Bar (<40px) */}
-        <div className="flex items-center justify-between px-3 py-1 bg-black/40 rounded-xl border border-white/10 text-xs backdrop-blur-sm">
-          {/* Logo & Current Theme Badge */}
-          <div className="flex items-center gap-2">
-            <span className="text-base select-none">{theme.icon}</span>
-            <span className="font-black tracking-wider text-sm bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-neutral-400">
-              CHAOSPAD
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-neutral-300 hidden sm:inline">
-              TOUCH FX
-            </span>
+      <div
+        className={cn(
+          "w-full max-w-[99vw] h-[98vh] border-2 rounded-3xl p-2 sm:p-3 flex flex-col gap-2 shadow-2xl relative transition-all duration-300",
+          theme.chassisBg,
+          theme.chassisBorder
+        )}
+      >
+        {/* Subtle Decorative Corner Screws */}
+        <div className="absolute top-2 left-2 w-2 h-2 rounded-full border border-white/20 bg-white/10" />
+        <div className="absolute top-2 right-2 w-2 h-2 rounded-full border border-white/20 bg-white/10" />
+        <div className="absolute bottom-2 left-2 w-2 h-2 rounded-full border border-white/20 bg-white/10" />
+        <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full border border-white/20 bg-white/10" />
+
+        {/* Header Bar */}
+        <div className="flex items-center justify-between px-3 py-1.5 bg-black/50 rounded-2xl border border-white/10 text-xs backdrop-blur-md shadow-inner relative z-30">
+          {/* Logo & Synth Info */}
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-7 h-7 rounded-xl flex items-center justify-center shadow-lg border border-white/20"
+              style={{ backgroundColor: `${theme.primaryAccent}33` }}
+            >
+              <span className="text-base leading-none select-none">{theme.icon}</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black tracking-wider text-sm bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-neutral-400">
+                  ARNPAD
+                </span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-white/10 text-neutral-300 border border-white/10">
+                  TOUCH SYNTH
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Center Info Display */}
-          <div className="flex items-center gap-3 font-mono text-[11px]">
-            <span className="text-white/70">PROG:</span>
-            <span className="font-bold text-white px-2 py-0.5 rounded bg-white/15">
-              {currentProgConfig.name}
-            </span>
-            <span className="text-white/40 hidden sm:inline">|</span>
-            <span className="text-white/70 hidden sm:inline">SAMPLE:</span>
-            <span className="font-semibold text-white/90 hidden sm:inline truncate max-w-[120px]">
-              {sampleNames[activePadSlot]}
-            </span>
-            <span className="text-white/40 hidden sm:inline">|</span>
-            <span className="font-bold text-amber-300">{bpm} BPM</span>
+          {/* Center Info Display Displaying Live Parameter Status */}
+          <div className="flex items-center gap-2 sm:gap-3 font-mono text-[11px]">
+            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl">
+              <span className="text-white/50 text-[10px]">PROG:</span>
+              <span
+                className="font-bold tracking-tight px-1.5 py-0.5 rounded text-[10px]"
+                style={{
+                  color: theme.primaryAccent,
+                  backgroundColor: `${theme.primaryAccent}22`,
+                }}
+              >
+                {currentProgConfig.name}
+              </span>
+            </div>
+
+            <div className="hidden md:flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl">
+              <span className="text-white/50 text-[10px]">SLOT {activePadSlot + 1}:</span>
+              <span className="font-semibold text-white/90 truncate max-w-[130px] text-[10px]">
+                {sampleNames[activePadSlot]}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-xl">
+              <Zap className="w-3 h-3 text-amber-400" />
+              <span className="font-bold text-amber-300 text-[11px]">{bpm} BPM</span>
+            </div>
           </div>
 
           {/* Quick Header Utilities */}
-          <div className="flex items-center gap-1.5">
-            {/* Theme Picker Button */}
-            <button
-              onClick={cycleTheme}
-              title={`Theme: ${theme.name} (Click to switch)`}
-              className="px-2.5 py-1 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-white font-mono text-[11px] flex items-center gap-1.5 transition-all active:scale-95 shadow"
-            >
-              <Palette className="w-3.5 h-3.5 text-pink-300" />
-              <span className="hidden sm:inline font-bold">{theme.name}</span>
-            </button>
+          <div className="flex items-center gap-2 relative">
+            {/* Theme Picker Dropdown Pill */}
+            <div className="relative">
+              <button
+                onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+                className="px-3 py-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-mono text-[11px] flex items-center gap-2 transition-all active:scale-95 shadow"
+                style={{
+                  boxShadow: themeMenuOpen ? `0 0 15px ${theme.glowColor}44` : undefined,
+                }}
+              >
+                <Palette className="w-3.5 h-3.5" style={{ color: theme.primaryAccent }} />
+                <span className="hidden sm:inline font-bold">{theme.name}</span>
+                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", themeMenuOpen && "rotate-180")} />
+              </button>
+
+              {/* Theme Menu Dropdown Popover */}
+              {themeMenuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-64 bg-neutral-950/95 border border-white/20 rounded-2xl shadow-2xl p-2 z-50 backdrop-blur-2xl flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-150"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="px-2 py-1 text-[10px] font-mono text-white/40 uppercase tracking-wider border-b border-white/10 mb-1">
+                    Select Aesthetic Theme
+                  </div>
+                  {(Object.keys(THEMES) as ThemeId[]).map((tId) => {
+                    const item = THEMES[tId];
+                    const isSelected = currentTheme === tId;
+                    return (
+                      <button
+                        key={tId}
+                        onClick={() => {
+                          setCurrentTheme(tId);
+                          setThemeMenuOpen(false);
+                        }}
+                        className={cn(
+                          "flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all text-xs font-mono group",
+                          isSelected
+                            ? "bg-white/15 text-white border border-white/20 font-bold"
+                            : "hover:bg-white/10 text-white/70 hover:text-white border border-transparent"
+                        )}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base">{item.icon}</span>
+                          <div>
+                            <div className="text-white text-xs leading-none">{item.name}</div>
+                            <div className="text-[9px] text-white/40 group-hover:text-white/60">
+                              {item.tagline}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div
+                            className="w-3 h-3 rounded-full border border-white/20 shadow-sm"
+                            style={{ backgroundColor: item.primaryAccent }}
+                          />
+                          {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Mute Button */}
-            <button
+            <GlowButton
+              size="sm"
+              variant={isMuted ? "danger" : "ghost"}
               onClick={toggleMute}
-              title={isMuted ? "Unmute" : "Mute"}
-              className={`p-1.5 rounded-lg border transition-all ${
-                isMuted
-                  ? "bg-red-600/80 border-red-400 text-white animate-pulse"
-                  : "bg-white/10 border-white/15 text-white/80 hover:text-white"
-              }`}
+              title={isMuted ? "Unmute Audio" : "Mute Audio"}
+              className="p-2 h-8 w-8 rounded-xl"
             >
               {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-            </button>
+            </GlowButton>
           </div>
         </div>
 
         {/* Central Workspace: Left Icon Column + Main XY Pad + Right Icon Column */}
-        <div className="flex-1 flex gap-2 w-full min-h-0 relative">
-          
+        <div className="flex-1 flex gap-2 sm:gap-2.5 w-full min-h-0 relative">
           {/* LEFT COLUMN: Programs & Utility Actions (Vertical Icon Stack) */}
-          <div className="w-14 sm:w-16 flex flex-col justify-between py-1 px-1 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md">
-            
+          <div className="w-14 sm:w-16 flex flex-col justify-between py-1.5 px-1 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
             {/* Program Selection Icons */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               <span className="text-[9px] font-mono text-center text-white/40 uppercase tracking-tighter">
                 PROG
               </span>
               {PROGRAMS.map((prog) => {
                 const isSelected = prog.id === activeProgram;
                 return (
-                  <button
+                  <GlowButton
                     key={prog.id}
+                    active={isSelected}
+                    glowColor={theme.glowColor}
                     onClick={() => {
                       setActiveProgram(prog.id);
                       if (touchPosRef.current) {
-                        updateAudioParams(touchPosRef.current.x, touchPosRef.current.y, holdingRef.current || !!touchPos);
+                        updateAudioParams(
+                          touchPosRef.current.x,
+                          touchPosRef.current.y,
+                          holdingRef.current || isPointerDownRef.current
+                        );
                       }
                     }}
                     title={`${prog.name}: ${prog.label}`}
-                    className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center transition-all border ${
-                      isSelected
-                        ? theme.btnActive
-                        : theme.btnInactive
-                    }`}
+                    className="w-12 h-12 rounded-2xl flex flex-col items-center justify-center p-0"
                   >
-                    {prog.icon}
+                    <div
+                      style={{
+                        color: isSelected ? theme.primaryAccent : "rgba(255,255,255,0.7)",
+                      }}
+                    >
+                      {prog.icon}
+                    </div>
                     <span className="text-[8px] font-mono font-bold mt-0.5 tracking-tighter">
-                      {prog.name.slice(0, 4)}
+                      {prog.badge}
                     </span>
-                  </button>
+                  </GlowButton>
                 );
               })}
             </div>
 
             {/* Utility Performance Toggles */}
-            <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+            <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
               {/* Tap Tempo */}
-              <button
+              <GlowButton
+                size="sm"
+                variant="amber"
                 onClick={handleTapTempo}
-                title="Tap Tempo"
-                className="w-12 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 hover:bg-amber-500/30 flex flex-col items-center justify-center transition-all active:scale-95"
+                title="Tap Tempo (BPM)"
+                className="w-12 h-10 rounded-2xl flex flex-col items-center justify-center p-0"
               >
-                <Zap className="w-4 h-4 text-amber-400" />
-                <span className="text-[8px] font-mono font-bold">TAP</span>
-              </button>
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[8px] font-mono font-bold text-amber-300">TAP</span>
+              </GlowButton>
 
               {/* Hold Toggle */}
-              <button
+              <GlowButton
+                size="sm"
+                active={holding}
+                glowColor={theme.secondaryAccent}
+                variant={holding ? "danger" : "ghost"}
                 onClick={toggleHold}
                 title={`Hold Position: ${holding ? "ON" : "OFF"}`}
-                className={`w-12 h-11 rounded-xl flex flex-col items-center justify-center transition-all border ${
-                  holding
-                    ? "bg-red-500 text-white border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.7)] animate-pulse"
-                    : "bg-white/10 text-white/60 border-white/15 hover:text-white"
-                }`}
+                className="w-12 h-11 rounded-2xl flex flex-col items-center justify-center p-0"
               >
-                <Sparkles className="w-4 h-4" />
-                <span className="text-[8px] font-mono font-bold">{holding ? "HOLD" : "FREE"}</span>
-              </button>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="text-[8px] font-mono font-bold">
+                  {holding ? "HOLD" : "FREE"}
+                </span>
+              </GlowButton>
             </div>
           </div>
 
           {/* CENTER: Maximized Interactive XY Touch Surface */}
-          <div className="flex-1 relative h-full rounded-2xl overflow-hidden border-2 border-white/20 shadow-inner bg-black flex flex-col justify-between">
-            
+          <div className="flex-1 relative h-full rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black flex flex-col justify-between">
             {/* Top Y Axis Metric Tag */}
             <div className="absolute top-2.5 left-3 right-3 flex justify-between items-center pointer-events-none z-10 text-[10px] font-mono tracking-wider">
-              <span className="bg-black/70 px-2.5 py-1 rounded-full border border-white/15 text-white/80 backdrop-blur-md shadow">
+              <span className="bg-black/75 px-3 py-1 rounded-full border border-white/15 text-white/90 backdrop-blur-md shadow">
                 ▲ Y: {currentProgConfig.yLabel}
               </span>
               {touchPos && (
                 <span
-                  className="px-3 py-1 rounded-full font-bold shadow-lg backdrop-blur-md border border-white/20 text-white"
-                  style={{ backgroundColor: `${theme.primaryAccent}cc` }}
+                  className="px-3.5 py-1 rounded-full font-bold shadow-lg backdrop-blur-md border border-white/20 text-white flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: `${theme.primaryAccent}dd`,
+                    boxShadow: `0 0 20px ${theme.primaryAccent}88`,
+                  }}
                 >
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                   X: {Math.round(touchPos.x * 100)}% | Y: {Math.round(touchPos.y * 100)}%
                 </span>
               )}
@@ -1109,60 +1327,58 @@ export default function KaossPad() {
 
             {/* Bottom X Axis Metric Tag */}
             <div className="absolute bottom-2.5 left-3 right-3 flex justify-between items-center pointer-events-none z-10 text-[10px] font-mono tracking-wider">
-              <span className="bg-black/70 px-2.5 py-1 rounded-full border border-white/15 text-white/80 backdrop-blur-md shadow">
+              <span className="bg-black/75 px-3 py-1 rounded-full border border-white/15 text-white/90 backdrop-blur-md shadow">
                 ◄ X: {currentProgConfig.xLabel} ►
               </span>
-              <span className="bg-black/70 px-2.5 py-1 rounded-full border border-white/15 text-white/50 backdrop-blur-md hidden sm:inline">
-                Touch & drag across pad to modulate
+              <span className="bg-black/75 px-3 py-1 rounded-full border border-white/15 text-white/60 backdrop-blur-md hidden sm:inline">
+                Touch & drag across pad to modulate synthesis
               </span>
             </div>
           </div>
 
           {/* RIGHT COLUMN: Sampler Pads & FX Modulation (Vertical Icon Stack) */}
-          <div className="w-14 sm:w-16 flex flex-col justify-between py-1 px-1 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md">
-            
+          <div className="w-14 sm:w-16 flex flex-col justify-between py-1.5 px-1 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
             {/* Sample Pad Selectors (1 to 4) */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[9px] font-mono text-center text-pink-300 uppercase tracking-tighter">
+              <span className="text-[9px] font-mono text-center uppercase tracking-tighter" style={{ color: theme.primaryAccent }}>
                 PADS
               </span>
               {[0, 1, 2, 3].map((slot) => {
                 const isSelected = activePadSlot === slot;
                 return (
-                  <button
+                  <GlowButton
                     key={slot}
+                    active={isSelected}
+                    glowColor={theme.primaryAccent}
                     onClick={() => setActivePadSlot(slot)}
                     title={`Select Sample ${slot + 1}: ${sampleNames[slot]}`}
-                    className={`w-12 h-10 rounded-xl flex flex-col items-center justify-center transition-all border ${
-                      isSelected
-                        ? "bg-pink-500 text-white font-bold border-pink-200 shadow-[0_0_12px_rgba(244,114,182,0.8)]"
-                        : "bg-pink-950/20 text-pink-300/80 hover:bg-pink-900/30 border-pink-900/40"
-                    }`}
+                    className="w-12 h-10 rounded-2xl flex flex-col items-center justify-center p-0"
                   >
                     <Disc className="w-3.5 h-3.5" />
                     <span className="text-[8px] font-mono font-bold">P{slot + 1}</span>
-                  </button>
+                  </GlowButton>
                 );
               })}
 
               {/* Sample Mic Recording Button */}
-              <button
+              <GlowButton
+                size="sm"
+                active={isRecording}
+                variant={isRecording ? "danger" : "ghost"}
                 onClick={toggleRecordSample}
                 title={isRecording ? "Stop Recording" : "Record Mic into active slot"}
-                className={`w-12 h-10 rounded-xl flex flex-col items-center justify-center transition-all border ${
-                  isRecording
-                    ? "bg-red-600 border-red-300 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.9)]"
-                    : "bg-red-950/30 border-red-800/40 text-red-400 hover:bg-red-900/40"
-                }`}
+                className="w-12 h-10 rounded-2xl flex flex-col items-center justify-center p-0"
               >
                 {isRecording ? <Square className="w-3.5 h-3.5 fill-current" /> : <Mic className="w-3.5 h-3.5" />}
-                <span className="text-[8px] font-mono font-bold">{isRecording ? "STOP" : "REC"}</span>
-              </button>
+                <span className="text-[8px] font-mono font-bold">
+                  {isRecording ? "STOP" : "REC"}
+                </span>
+              </GlowButton>
 
-              {/* Sample File Upload */}
+              {/* Sample File Upload Button */}
               <label
                 title="Load Audio File into active slot"
-                className="w-12 h-10 rounded-xl flex flex-col items-center justify-center transition-all border bg-white/10 border-white/15 text-white/70 hover:text-white cursor-pointer"
+                className="w-12 h-10 rounded-2xl flex flex-col items-center justify-center transition-all border bg-white/5 border-white/15 text-white/70 hover:text-white hover:bg-white/10 cursor-pointer active:scale-95 shadow-sm"
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span className="text-[8px] font-mono font-bold">FILE</span>
@@ -1172,45 +1388,48 @@ export default function KaossPad() {
 
             {/* FX Modulation Switchers (Flanger, Slicer, Tape) */}
             <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
-              <span className="text-[9px] font-mono text-center text-cyan-300 uppercase tracking-tighter">
+              <span className="text-[9px] font-mono text-center uppercase tracking-tighter" style={{ color: theme.secondaryAccent }}>
                 FX MOD
               </span>
               {[
-                { id: "off", icon: <Sliders className="w-3.5 h-3.5" />, label: "OFF" },
-                { id: "flanger", icon: <Waves className="w-3.5 h-3.5" />, label: "FLNG" },
-                { id: "tremolo_slicer", icon: <Repeat className="w-3.5 h-3.5" />, label: "SLC" },
-                { id: "tape_flutter", icon: <Layers className="w-3.5 h-3.5" />, label: "TAPE" },
+                { id: "off", icon: <Sliders className="w-3 h-3" />, label: "OFF" },
+                { id: "flanger", icon: <Waves className="w-3 h-3" />, label: "FLNG" },
+                { id: "tremolo_slicer", icon: <Repeat className="w-3 h-3" />, label: "SLC" },
+                { id: "tape_flutter", icon: <Layers className="w-3 h-3" />, label: "TAPE" },
               ].map((fx) => {
                 const isActive = activeModType === fx.id;
                 return (
-                  <button
+                  <GlowButton
                     key={fx.id}
+                    active={isActive}
+                    glowColor={theme.secondaryAccent}
                     onClick={() => selectModType(fx.id as ModType)}
                     title={`Mod FX: ${fx.label}`}
-                    className={`w-12 h-9 rounded-xl flex flex-col items-center justify-center transition-all border ${
-                      isActive
-                        ? "bg-cyan-500 text-black font-bold border-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.8)]"
-                        : "bg-cyan-950/20 text-cyan-300/70 hover:bg-cyan-900/30 border-cyan-900/40"
-                    }`}
+                    className="w-12 h-9 rounded-2xl flex flex-col items-center justify-center p-0"
                   >
                     {fx.icon}
                     <span className="text-[8px] font-mono font-bold">{fx.label}</span>
-                  </button>
+                  </GlowButton>
                 );
               })}
             </div>
           </div>
         </div>
 
-        {/* Ultra-slim Bottom Status Footer (<24px) */}
-        <div className="flex items-center justify-between px-3 text-[10px] font-mono text-white/50">
+        {/* Bottom Status Footer Bar */}
+        <div className="flex items-center justify-between px-3 text-[10px] font-mono text-white/50 bg-black/40 rounded-xl py-1 border border-white/5">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span
+              className="w-2 h-2 rounded-full animate-ping"
+              style={{ backgroundColor: theme.primaryAccent }}
+            />
             <span className="truncate">REALTIME WEB AUDIO TOUCH SAMPLER & MULTI-FX</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="hidden sm:inline">THEME: {theme.name.toUpperCase()}</span>
-            <span>MULTI-TOUCH</span>
+            <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/70">
+              MULTI-TOUCH READY
+            </span>
           </div>
         </div>
       </div>
