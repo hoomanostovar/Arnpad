@@ -181,6 +181,9 @@ export default function KaossPad() {
   const isMutedRef = useRef<boolean>(isMuted);
   const activePadSlotRef = useRef<number>(activePadSlot);
   const themeRef = useRef<ThemeConfig>(theme);
+  const isPointerDownRef = useRef<boolean>(false);
+  const isEngagedRef = useRef<boolean>(false);
+  const lastSliceRef = useRef<number>(-1);
 
   touchPosRef.current = touchPos;
   holdingRef.current = holding;
@@ -193,49 +196,51 @@ export default function KaossPad() {
   const generateFactoryPresets = useCallback((ctx: AudioContext) => {
     const sRate = ctx.sampleRate;
 
-    // Slot 0: Sparkle Chime / Bell Hit
-    const dur0 = 1.6;
+    // Slot 0: Sparkle Chime / Bell Hit & Drone
+    const dur0 = 2.0;
     const buf0 = ctx.createBuffer(1, Math.floor(sRate * dur0), sRate);
     const data0 = buf0.getChannelData(0);
     for (let i = 0; i < data0.length; i++) {
       const t = i / sRate;
-      const b1 = Math.sin(2 * Math.PI * 523.25 * t) * 0.4;
-      const b2 = Math.sin(2 * Math.PI * 1046.5 * t) * 0.3;
-      const b3 = Math.sin(2 * Math.PI * 1567.98 * t) * 0.2;
+      const b1 = Math.sin(2 * Math.PI * 523.25 * t) * 0.35;
+      const b2 = Math.sin(2 * Math.PI * 1046.5 * t) * 0.25;
+      const b3 = Math.sin(2 * Math.PI * 1567.98 * t) * 0.15;
       const b4 = Math.sin(2 * Math.PI * 2093.0 * t) * 0.1;
-      const shimmer = Math.sin(t * 30) * 0.1;
-      const env = Math.exp(-t * 2.5);
+      const shimmer = Math.sin(t * 24) * 0.1;
+      const env = 0.45 + 0.55 * Math.exp(-((t % 1.0) * 2.0));
       data0[i] = (b1 + b2 + b3 + b4 + shimmer) * env;
     }
     sampleBankRef.current[0] = buf0;
 
-    // Slot 1: Cute Sub Kitty Drop
-    const dur1 = 1.0;
+    // Slot 1: Cute Sub Kitty Drop / Bass Tone
+    const dur1 = 1.5;
     const buf1 = ctx.createBuffer(1, Math.floor(sRate * dur1), sRate);
     const data1 = buf1.getChannelData(0);
     for (let i = 0; i < data1.length; i++) {
       const t = i / sRate;
-      const freq = 135 * Math.exp(-t * 12) + 42;
-      const env = Math.exp(-t * 3.2);
-      data1[i] = Math.sin(2 * Math.PI * freq * t) * env;
+      const freq = 65 + 30 * Math.sin(t * 8);
+      const sub = Math.sin(2 * Math.PI * freq * t) * 0.65;
+      const sub2 = Math.sin(4 * Math.PI * freq * t) * 0.2;
+      const env = 0.5 + 0.5 * Math.sin(t * 4);
+      data1[i] = (sub + sub2) * env;
     }
     sampleBankRef.current[1] = buf1;
 
-    // Slot 2: Sweet Candy Rim Percussion
-    const dur2 = 0.7;
+    // Slot 2: Sweet Candy Rim Percussion & Groove
+    const dur2 = 1.0;
     const buf2 = ctx.createBuffer(1, Math.floor(sRate * dur2), sRate);
     const data2 = buf2.getChannelData(0);
     for (let i = 0; i < data2.length; i++) {
       const t = i / sRate;
-      const tonal = Math.sin(2 * Math.PI * 880 * t) * 0.4 + Math.sin(2 * Math.PI * 1760 * t) * 0.2;
-      const noise = (Math.random() * 2 - 1) * Math.exp(-t * 30);
-      const env = Math.exp(-t * 8);
-      data2[i] = (tonal + noise) * env;
+      const beatEnv = Math.exp(-((t % 0.25) * 16));
+      const tonal = (Math.sin(2 * Math.PI * 880 * t) + Math.sin(2 * Math.PI * 1760 * t) * 0.5) * 0.4;
+      const noise = (Math.random() * 2 - 1) * Math.exp(-((t % 0.25) * 28)) * 0.25;
+      data2[i] = (tonal + noise) * beatEnv + (Math.sin(2 * Math.PI * 220 * t) * 0.15);
     }
     sampleBankRef.current[2] = buf2;
 
-    // Slot 3: Dreamy Cloud Stab (Major 7th)
-    const dur3 = 1.8;
+    // Slot 3: Dreamy Cloud Stab (Major 7th Sustained Pad)
+    const dur3 = 2.0;
     const buf3 = ctx.createBuffer(1, Math.floor(sRate * dur3), sRate);
     const data3 = buf3.getChannelData(0);
     for (let i = 0; i < data3.length; i++) {
@@ -244,8 +249,9 @@ export default function KaossPad() {
       const e = Math.sin(2 * Math.PI * 392.0 * t);
       const g = Math.sin(2 * Math.PI * 493.88 * t);
       const b = Math.sin(2 * Math.PI * 587.33 * t);
-      const env = Math.exp(-t * 2.0);
-      data3[i] = (c + e + g + b) * 0.22 * env;
+      const shimmer = Math.sin(t * 18) * 0.1;
+      const env = 0.5 + 0.5 * Math.sin(t * 3.14159);
+      data3[i] = (c + e + g + b + shimmer) * 0.2 * env;
     }
     sampleBankRef.current[3] = buf3;
   }, []);
@@ -406,13 +412,18 @@ export default function KaossPad() {
     const now = ctx.currentTime;
     const p = programRef.current;
 
+    // Gate control: only ramp when transition between engaged and disengaged occurs
     if (touchGainRef.current) {
-      if (isEngaged) {
+      if (isEngaged && !isEngagedRef.current) {
+        isEngagedRef.current = true;
         touchGainRef.current.gain.cancelScheduledValues(now);
-        touchGainRef.current.gain.setTargetAtTime(0.8, now, 0.02);
-      } else {
+        touchGainRef.current.gain.setValueAtTime(touchGainRef.current.gain.value, now);
+        touchGainRef.current.gain.linearRampToValueAtTime(0.85, now + 0.015);
+      } else if (!isEngaged && isEngagedRef.current) {
+        isEngagedRef.current = false;
         touchGainRef.current.gain.cancelScheduledValues(now);
-        touchGainRef.current.gain.setTargetAtTime(0, now, 0.05);
+        touchGainRef.current.gain.setValueAtTime(touchGainRef.current.gain.value, now);
+        touchGainRef.current.gain.linearRampToValueAtTime(0.0, now + 0.035);
       }
     }
 
@@ -505,12 +516,19 @@ export default function KaossPad() {
 
   // Pointer event listeners on Touch Surface
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
     initAudio();
     if (audioCtxRef.current?.state === "suspended") {
       audioCtxRef.current.resume();
     }
 
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+    isPointerDownRef.current = true;
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     const y = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
@@ -518,6 +536,7 @@ export default function KaossPad() {
     setTouchPos({ x, y });
 
     if (programRef.current === "sampler_grain") {
+      lastSliceRef.current = Math.floor(x * 16);
       triggerSamplePlayback(x, y, true);
     }
     updateAudioParams(x, y, true);
@@ -526,12 +545,25 @@ export default function KaossPad() {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    e.preventDefault();
+    // Allow dragging when pointer is captured, primary button is pressed, or in HOLD mode
+    const isActive = isPointerDownRef.current || e.buttons === 1 || holdingRef.current;
+    if (!isActive) return;
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     const y = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
 
     setTouchPos({ x, y });
+
+    if (programRef.current === "sampler_grain") {
+      const slice = Math.floor(x * 16);
+      if (slice !== lastSliceRef.current) {
+        lastSliceRef.current = slice;
+        triggerSamplePlayback(x, y, true);
+      }
+    }
+
     updateAudioParams(x, y, true);
 
     trailPointsRef.current.push({
@@ -547,15 +579,19 @@ export default function KaossPad() {
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
+    e.preventDefault();
+    isPointerDownRef.current = false;
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      // ignore
     }
 
     if (!holdingRef.current) {
       setTouchPos(null);
-      if (touchPosRef.current) {
-        updateAudioParams(touchPosRef.current.x, touchPosRef.current.y, false);
-      }
+      updateAudioParams(0, 0, false);
       if (activeSampleSourceRef.current) {
         try {
           activeSampleSourceRef.current.stop((audioCtxRef.current?.currentTime ?? 0) + 0.05);
@@ -564,6 +600,11 @@ export default function KaossPad() {
         }
       }
     }
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.buttons === 1 || holdingRef.current) return;
+    handlePointerUp(e);
   };
 
   // Switch Themes
@@ -577,10 +618,9 @@ export default function KaossPad() {
   const toggleHold = () => {
     const nextHold = !holding;
     setHolding(nextHold);
-    if (!nextHold && !touchPos) {
-      if (touchPosRef.current) {
-        updateAudioParams(touchPosRef.current.x, touchPosRef.current.y, false);
-      }
+    if (!nextHold && !isPointerDownRef.current) {
+      setTouchPos(null);
+      updateAudioParams(0, 0, false);
       if (activeSampleSourceRef.current) {
         try {
           activeSampleSourceRef.current.stop();
@@ -1061,10 +1101,10 @@ export default function KaossPad() {
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               className="absolute inset-0 cursor-crosshair touch-none select-none"
             >
-              <canvas ref={canvasRef} className="w-full h-full block" />
+              <canvas ref={canvasRef} className="w-full h-full block pointer-events-none" />
             </div>
 
             {/* Bottom X Axis Metric Tag */}
