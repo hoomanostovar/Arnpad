@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Arnpad</string>
+    <string name="title_activity_main">Arnpad</string>
+    <string name="package_name">com.arnpad.synth</string>
+    <string name="custom_url_scheme">com.arnpad.synth</string>
+</resources>

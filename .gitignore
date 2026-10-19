@@ -4,3 +4,13 @@ dist-ssr
 *.local
 .npmrc
 .DS_Store
+
+# Android Build Artifacts
+.gradle
+build/
+android/app/build/
+android/.gradle/
+android/build/
+local.properties
+*.apk
+*.aab
