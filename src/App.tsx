@@ -953,107 +953,65 @@ export default function KaossPad() {
         ctx.stroke();
       }
 
-      // 1. Interactive Horizontal Centerline: Audio Waveform giving feedback across the ENTIRE screen
+      // 1. Interactive Horizontal Centerline: Toned-down, refined audio oscilloscope wave
       const waveLen = waveData.length;
 
-      // Soft ambient glow fill between upper and lower wave when audio is active
-      if (audioEnergy > 0.015) {
-        ctx.save();
-        const waveGrad = ctx.createLinearGradient(0, centerY - height * 0.24, 0, centerY + height * 0.24);
-        waveGrad.addColorStop(0, `${curTheme.primaryAccent}15`);
-        waveGrad.addColorStop(0.5, `${curTheme.secondaryAccent}25`);
-        waveGrad.addColorStop(1, `${curTheme.primaryAccent}15`);
-        ctx.fillStyle = waveGrad;
-        ctx.beginPath();
-        for (let i = 0; i < waveLen; i++) {
-          const x = (width / (waveLen - 1)) * i;
-          const rawWave = (waveData[i] - 128) / 128;
-          const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
-          const y = centerY - waveAmp;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        for (let i = waveLen - 1; i >= 0; i--) {
-          const x = (width / (waveLen - 1)) * i;
-          const rawWave = (waveData[i] - 128) / 128;
-          const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
-          const y = centerY + waveAmp;
-          ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // Upper dynamic audio wave spanning left to right
       ctx.beginPath();
       for (let i = 0; i < waveLen; i++) {
         const x = (width / (waveLen - 1)) * i;
         const rawWave = (waveData[i] - 128) / 128;
-        const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
-        const restingShimmer = audioEnergy > 0.015 ? 0 : Math.sin(animTime * 2.5 + (i / waveLen) * Math.PI * 4) * 1.5;
+        // Toned down amplitude: subtle, clean, elegant deflection
+        const waveAmp = rawWave * (height * 0.055) * Math.min(1.0, audioEnergy * 2.2 + 0.1);
+        const restingShimmer = audioEnergy > 0.012 ? 0 : Math.sin(animTime * 2.0 + (i / waveLen) * Math.PI * 4) * 0.8;
         const y = centerY - waveAmp - restingShimmer;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = `${curTheme.primaryAccent}99`;
-      ctx.lineWidth = 2.0;
+      ctx.strokeStyle = `${curTheme.primaryAccent}88`;
+      ctx.lineWidth = 1.4;
       ctx.stroke();
 
-      // Lower mirrored harmonic audio wave spanning left to right
-      ctx.beginPath();
-      for (let i = 0; i < waveLen; i++) {
-        const x = (width / (waveLen - 1)) * i;
-        const rawWave = (waveData[i] - 128) / 128;
-        const waveAmp = rawWave * (height * 0.24) * Math.min(2.0, audioEnergy * 3.8 + 0.15);
-        const restingShimmer = audioEnergy > 0.015 ? 0 : Math.sin(animTime * 2.5 + (i / waveLen) * Math.PI * 4) * 1.5;
-        const y = centerY + waveAmp + restingShimmer;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      // Subtle secondary harmonic echo line
+      if (audioEnergy > 0.015) {
+        ctx.beginPath();
+        for (let i = 0; i < waveLen; i++) {
+          const x = (width / (waveLen - 1)) * i;
+          const rawWave = (waveData[i] - 128) / 128;
+          const waveAmp = rawWave * (height * 0.035) * Math.min(1.0, audioEnergy * 2.2 + 0.1);
+          const y = centerY + waveAmp;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `${curTheme.secondaryAccent}55`;
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
       }
-      ctx.strokeStyle = `${curTheme.secondaryAccent}77`;
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
 
-      // 2. Vertical Division Line: Pulsating with Tempo & Interactive Beat Effects
-      const vertAlpha = 0.08 + tempoPulse * 0.36 + audioEnergy * 0.18;
+      // 2. Vertical Division Line: Faint horizontal glow pulsating with tempo (no bouncing ball)
+      const glowWidth = 14 + tempoPulse * 28;
+      const hGlow = ctx.createLinearGradient(centerX - glowWidth, 0, centerX + glowWidth, 0);
+      hGlow.addColorStop(0, "rgba(0, 0, 0, 0)");
+      hGlow.addColorStop(0.5, `hsla(${curTheme.trailHue}, 90%, 75%, ${0.03 + tempoPulse * 0.14})`);
+      hGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = hGlow;
+      ctx.fillRect(centerX - glowWidth, 0, glowWidth * 2, height);
+
+      // Clean vertical division axis line
+      const vertAlpha = 0.06 + tempoPulse * 0.16 + audioEnergy * 0.08;
       ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 75%, ${vertAlpha})`;
-      ctx.lineWidth = 1.0 + tempoPulse * 1.5;
-      ctx.setLineDash([tempoPulse > 0.4 ? 3 : 5, 5]);
+      ctx.lineWidth = 1.0;
+      ctx.setLineDash([4, 6]);
       ctx.beginPath();
       ctx.moveTo(centerX, 0);
       ctx.lineTo(centerX, height);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Traveling light beacon moving vertically in sync with tempo
-      const beadY = (Math.sin(animTime * beatsPerSec * Math.PI) * 0.5 + 0.5) * height;
-      const beadGrad = ctx.createRadialGradient(centerX, beadY, 1, centerX, beadY, 14);
-      beadGrad.addColorStop(0, "#ffffff");
-      beadGrad.addColorStop(0.35, curTheme.secondaryAccent);
-      beadGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.fillStyle = beadGrad;
-      ctx.beginPath();
-      ctx.arc(centerX, beadY, 14, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Quarter-interval tick notches along the vertical line
-      const tickHeights = [0.25, 0.5, 0.75];
-      ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 80%, ${0.15 + tempoPulse * 0.4})`;
-      ctx.lineWidth = 1.5;
-      for (const th of tickHeights) {
-        const ty = height * th;
-        ctx.beginPath();
-        ctx.moveTo(centerX - 8 - tempoPulse * 6, ty);
-        ctx.lineTo(centerX + 8 + tempoPulse * 6, ty);
-        ctx.stroke();
-      }
-
-      // Center intersection crystal diamond node
+      // Subtle center intersection diamond node
       ctx.save();
       ctx.translate(centerX, centerY);
-      const nodeSize = 3.5 + tempoPulse * 3.5 + audioEnergy * 4;
-      ctx.fillStyle = "#ffffff";
+      const nodeSize = 2.5 + tempoPulse * 2.0;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
       ctx.beginPath();
       ctx.moveTo(0, -nodeSize);
       ctx.quadraticCurveTo(0, 0, nodeSize, 0);
