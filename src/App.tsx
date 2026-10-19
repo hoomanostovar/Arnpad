@@ -845,10 +845,12 @@ export default function KaossPad() {
     if (!ctx) return;
 
     let isRunning = true;
+    let animTime = 0;
     const freqData = new Uint8Array(32);
 
     const render = () => {
       if (!isRunning) return;
+      animTime += 0.04;
 
       const dpr = window.devicePixelRatio || 1;
       const width = canvas.clientWidth;
@@ -939,11 +941,30 @@ export default function KaossPad() {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Render colorful sparkling particle trails
+      // Continuously spawn magical orbiting sparkles when finger is touching/held
+      const currentPos = touchPosRef.current;
+      if (currentPos) {
+        if (Math.random() < 0.8) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 10 + Math.random() * 55;
+          trailPointsRef.current.push({
+            x: currentPos.x + (Math.cos(angle) * dist) / width,
+            y: currentPos.y + (Math.sin(angle) * dist) / height,
+            alpha: 1.0,
+            radius: 12 + Math.random() * 16,
+            hue: (curTheme.trailHue + Math.sin(animTime * 2.5) * 50 + Math.random() * 40) % 360,
+          });
+          if (trailPointsRef.current.length > 60) {
+            trailPointsRef.current.shift();
+          }
+        }
+      }
+
+      // Render colorful sparkling particle trails and rotating 4-point magic stars
       for (let i = trailPointsRef.current.length - 1; i >= 0; i--) {
         const pt = trailPointsRef.current[i];
-        pt.alpha -= 0.025;
-        pt.radius *= 0.96;
+        pt.alpha -= 0.022;
+        pt.radius *= 0.965;
 
         if (pt.alpha <= 0) {
           trailPointsRef.current.splice(i, 1);
@@ -953,31 +974,40 @@ export default function KaossPad() {
         const px = pt.x * width;
         const py = (1 - pt.y) * height;
 
-        ctx.fillStyle = `hsla(${pt.hue}, 90%, 65%, ${pt.alpha * 0.55})`;
+        // Glowing aura around particle
+        ctx.fillStyle = `hsla(${pt.hue}, 95%, 65%, ${pt.alpha * 0.45})`;
         ctx.beginPath();
         ctx.arc(px, py, pt.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Extra cute sparkles on touches
-        if (i % 2 === 0) {
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(px + Math.sin(pt.alpha * 10) * 10, py + Math.cos(pt.alpha * 10) * 10, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        // Rotating 4-point diamond star sparkle
+        const starSize = Math.max(2.5, pt.radius * 0.42 * pt.alpha);
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(animTime * 2.2 + pt.hue);
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.moveTo(0, -starSize * 1.3);
+        ctx.quadraticCurveTo(0, 0, starSize, 0);
+        ctx.quadraticCurveTo(0, 0, 0, starSize * 1.3);
+        ctx.quadraticCurveTo(0, 0, -starSize, 0);
+        ctx.quadraticCurveTo(0, 0, 0, -starSize * 1.3);
+        ctx.fill();
+        ctx.restore();
       }
 
-      // Active touch pointer & laser crosshair
-      const currentPos = touchPosRef.current;
+      // Active touch pointer: Animated Breathing Glow, Rotating Swirls & Sparkles
       if (currentPos) {
         const cx = currentPos.x * width;
         const cy = (1 - currentPos.y) * height;
 
-        // Radial glowing aura
-        const auraRadius = 80 + audioEnergy * 60;
-        const grad = ctx.createRadialGradient(cx, cy, 4, cx, cy, auraRadius);
-        grad.addColorStop(0, curTheme.primaryAccent);
-        grad.addColorStop(0.35, curTheme.secondaryAccent);
+        // 1. Pulsing breathing glowing aura around touch
+        const pulse = Math.sin(animTime * 3.5) * 12;
+        const auraRadius = 90 + pulse + audioEnergy * 70;
+        const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, auraRadius);
+        grad.addColorStop(0, "#ffffff");
+        grad.addColorStop(0.15, curTheme.primaryAccent);
+        grad.addColorStop(0.4, curTheme.secondaryAccent);
         grad.addColorStop(0.7, `${curTheme.primaryAccent}33`);
         grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
@@ -986,8 +1016,78 @@ export default function KaossPad() {
         ctx.arc(cx, cy, auraRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Crosshairs
-        ctx.strokeStyle = curTheme.primaryAccent;
+        // 2. Harmonic sonic ripples expanding outward while touching
+        for (let rIdx = 0; rIdx < 2; rIdx++) {
+          const rDist = ((animTime * 40 + rIdx * 45) % 90);
+          const rAlpha = Math.max(0, 1 - rDist / 90) * 0.45;
+          ctx.strokeStyle = `hsla(${curTheme.trailHue}, 90%, 75%, ${rAlpha})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rDist, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // 3. Animated Cosmic Spiral Swirls rotating around the touch center (4 arms)
+        const swirlArms = 4;
+        for (let arm = 0; arm < swirlArms; arm++) {
+          const baseAngle = animTime * 2.4 + (arm * (Math.PI * 2 / swirlArms));
+          ctx.beginPath();
+          for (let r = 8; r <= 56; r += 2) {
+            const theta = baseAngle + r * 0.085;
+            const sx = cx + Math.cos(theta) * r;
+            const sy = cy + Math.sin(theta) * r;
+            if (r === 8) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.strokeStyle = `hsla(${(curTheme.trailHue + arm * 40) % 360}, 95%, 72%, 0.75)`;
+          ctx.lineWidth = 2.2;
+          ctx.stroke();
+
+          // Satellite diamond star at tip of each swirl arm
+          const tipTheta = baseAngle + 56 * 0.085;
+          const tipX = cx + Math.cos(tipTheta) * 56;
+          const tipY = cy + Math.sin(tipTheta) * 56;
+
+          ctx.save();
+          ctx.translate(tipX, tipY);
+          ctx.rotate(animTime * 3 + arm);
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.moveTo(0, -3.5);
+          ctx.quadraticCurveTo(0, 0, 3.5, 0);
+          ctx.quadraticCurveTo(0, 0, 0, 3.5);
+          ctx.quadraticCurveTo(0, 0, -3.5, 0);
+          ctx.quadraticCurveTo(0, 0, 0, -3.5);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // 4. Counter-rotating Orbital Ring with Star Nodes
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(-animTime * 1.5);
+        ctx.strokeStyle = `${curTheme.primaryAccent}99`;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([3, 6]);
+        ctx.beginPath();
+        ctx.arc(0, 0, 34, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Mini rotating star nodes along the ring
+        for (let s = 0; s < 4; s++) {
+          const sAngle = (s * Math.PI) / 2;
+          const sx = Math.cos(sAngle) * 34;
+          const sy = Math.sin(sAngle) * 34;
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // 5. Laser crosshairs
+        ctx.strokeStyle = `${curTheme.primaryAccent}bb`;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(cx, 0);
@@ -996,16 +1096,16 @@ export default function KaossPad() {
         ctx.lineTo(width, cy);
         ctx.stroke();
 
-        // Center jewel
+        // 6. Glowing Center Jewel & Multi-ring Flare
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.strokeStyle = curTheme.secondaryAccent;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
         ctx.stroke();
       }
 
@@ -1030,7 +1130,7 @@ export default function KaossPad() {
       symbol: "∿",
       xLabel: "Slice / Start Offset",
       yLabel: "Pitch / Playback Rate",
-      icon: <Music className="w-3.5 h-3.5" />,
+      icon: <Music className="w-5 h-5" />,
     },
     {
       id: "synth_lead",
@@ -1040,7 +1140,7 @@ export default function KaossPad() {
       symbol: "⚡",
       xLabel: "Pitch (Pentatonic Scale)",
       yLabel: "Cutoff / Resonance",
-      icon: <Zap className="w-3.5 h-3.5" />,
+      icon: <Zap className="w-5 h-5" />,
     },
     {
       id: "bass_wobble",
@@ -1050,7 +1150,7 @@ export default function KaossPad() {
       symbol: "◉",
       xLabel: "Sub Frequency (42-137 Hz)",
       yLabel: "LFO Speed & Drive",
-      icon: <Activity className="w-3.5 h-3.5" />,
+      icon: <Activity className="w-5 h-5" />,
     },
     {
       id: "ambient_space",
@@ -1060,7 +1160,7 @@ export default function KaossPad() {
       symbol: "✦",
       xLabel: "Harmonic Chords",
       yLabel: "Delay Time / Feedback",
-      icon: <Sparkles className="w-3.5 h-3.5" />,
+      icon: <Sparkles className="w-5 h-5" />,
     },
     {
       id: "filter_noise",
@@ -1070,7 +1170,7 @@ export default function KaossPad() {
       symbol: "▲",
       xLabel: "Bandpass Sweep",
       yLabel: "Noise Resonance / Q",
-      icon: <Flame className="w-3.5 h-3.5" />,
+      icon: <Flame className="w-5 h-5" />,
     },
   ];
 
@@ -1244,25 +1344,25 @@ export default function KaossPad() {
           {/* LEFT COLUMN: Programs & Utility Actions (Tactile Keycaps) */}
           <div className="w-16 sm:w-20 flex flex-col justify-between py-1.5 px-1 bg-black/60 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
             {/* Program Selection Keycaps */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider">
+            <div className="flex flex-col gap-2 items-center">
+              <div className="flex items-center justify-between w-full px-1">
+                <span className="text-[8px] font-mono text-white/40 uppercase tracking-wider font-bold">
                   PROG
                 </span>
-                <span className="w-1 h-1 rounded-full bg-white/30" />
+                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
               </div>
               {PROGRAMS.map((prog) => {
                 const isSelected = prog.id === activeProgram;
                 return (
                   <TactileButton
                     key={prog.id}
+                    size="round"
+                    rounded="full"
                     active={isSelected}
                     glowColor={theme.primaryAccent}
                     ledColor={isSelected ? theme.primaryAccent : undefined}
                     symbol={prog.symbol}
                     icon={prog.icon}
-                    label={prog.name}
-                    badge={prog.badge}
                     onClick={() => {
                       setActiveProgram(prog.id);
                       if (touchPosRef.current) {
@@ -1274,41 +1374,39 @@ export default function KaossPad() {
                       }
                     }}
                     title={`${prog.name}: ${prog.label}`}
-                    className="h-12 w-full"
+                    className="w-11 h-11 sm:w-12 sm:h-12 mx-auto"
                   />
                 );
               })}
             </div>
 
             {/* Utility Performance Toggles */}
-            <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+            <div className="flex flex-col gap-1.5 items-center pt-2 border-t border-white/10 w-full">
               {/* Tap Tempo */}
               <TactileButton
-                size="md"
+                size="round"
+                rounded="full"
                 variant="amber"
                 symbol="♩"
-                icon={<Zap className="w-3 h-3 text-amber-400" />}
-                label="TAP"
-                sublabel={`${bpm} BPM`}
+                icon={<Zap className="w-4 h-4 text-amber-400" />}
                 onClick={handleTapTempo}
-                title="Tap Tempo"
-                className="h-11 w-full"
+                title={`Tap Tempo (${bpm} BPM)`}
+                className="w-11 h-11 sm:w-12 sm:h-12 mx-auto"
               />
 
               {/* Hold Toggle */}
               <TactileButton
-                size="md"
+                size="round"
+                rounded="full"
                 variant={holding ? "record" : "synth"}
                 active={holding}
                 glowColor={holding ? "#ef4444" : theme.secondaryAccent}
                 ledColor={holding ? "#ef4444" : "#34d399"}
                 symbol="⟳"
-                icon={<Sparkles className="w-3 h-3" />}
-                label={holding ? "HOLD" : "FREE"}
-                sublabel={holding ? "LOCKED" : "MOMENT"}
+                icon={<Sparkles className="w-4 h-4" />}
                 onClick={toggleHold}
                 title={`Hold Position: ${holding ? "ON" : "OFF"}`}
-                className="h-11 w-full"
+                className="w-11 h-11 sm:w-12 sm:h-12 mx-auto"
               />
             </div>
           </div>
@@ -1359,8 +1457,8 @@ export default function KaossPad() {
           {/* RIGHT COLUMN: Sampler Pads & FX Modulation (Tactile Drum Pads) */}
           <div className="w-20 sm:w-28 flex flex-col justify-between py-1.5 px-1 bg-black/60 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
             {/* Sample Pad Selectors (1 to 4) */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between px-1">
+            <div className="flex flex-col gap-1.5 items-center">
+              <div className="flex items-center justify-between w-full px-1">
                 <span
                   className="text-[8px] font-mono uppercase tracking-wider font-bold"
                   style={{ color: theme.primaryAccent }}
@@ -1380,44 +1478,39 @@ export default function KaossPad() {
                     glowColor={theme.primaryAccent}
                     onClick={() => setActivePadSlot(slot)}
                     title={`Select Sample ${slot + 1}: ${sampleNames[slot]}`}
+                    className="w-12 h-12 sm:w-14 sm:h-14 mx-auto"
                   />
                 );
               })}
 
               {/* Record and File Row */}
-              <div className="grid grid-cols-2 gap-1 pt-0.5">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 w-full">
                 {/* Sample Mic Recording Button */}
                 <TactileButton
-                  size="sm"
+                  size="round"
+                  rounded="full"
                   variant="record"
                   active={isRecording}
                   symbol="⏺"
-                  icon={isRecording ? <Square className="w-3 h-3 fill-current" /> : <Mic className="w-3 h-3" />}
-                  label={isRecording ? "STOP" : "REC"}
+                  icon={isRecording ? <Square className="w-3.5 h-3.5 fill-current" /> : <Mic className="w-3.5 h-3.5" />}
                   onClick={toggleRecordSample}
                   title={isRecording ? "Stop Recording" : "Record Mic into active slot"}
-                  className="h-10 w-full"
+                  className="w-9 h-9 sm:w-10 sm:h-10 mx-auto"
                 />
 
                 {/* Sample File Upload Button */}
-                <div className="relative group p-0.5 rounded-2xl bg-black/60 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] border border-white/5 w-full">
+                <div className="relative group p-0.5 rounded-full bg-black/60 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] border border-white/5 w-9 h-9 sm:w-10 sm:h-10 mx-auto flex items-center justify-center">
                   <label
                     title="Load Audio File into active slot"
                     className={cn(
-                      "relative w-full h-10 rounded-xl cursor-pointer select-none outline-none font-sans flex flex-col items-center justify-center transition-all duration-150 ease-out",
+                      "relative w-full h-full rounded-full cursor-pointer select-none outline-none font-sans flex items-center justify-center transition-all duration-150 ease-out",
                       "bg-gradient-to-b from-neutral-800/90 via-neutral-900/95 to-neutral-950 text-white/80",
                       "border border-t-white/20 border-b-black/80 border-x-white/10",
-                      "shadow-[0_3px_0_#0a0a0f,0_5px_8px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.25)]",
+                      "shadow-[0_2px_0_#0a0a0f,0_4px_6px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.25)]",
                       "hover:brightness-115 hover:-translate-y-[1px] active:translate-y-[2px]"
                     )}
                   >
-                    <div className="flex items-center gap-0.5">
-                      <span className="text-[9px] font-mono opacity-50">⏏</span>
-                      <Upload className="w-3 h-3 text-white/80" />
-                    </div>
-                    <span className="text-[7.5px] font-mono font-black tracking-tighter leading-none uppercase text-white/70">
-                      LOAD
-                    </span>
+                    <Upload className="w-3.5 h-3.5 text-white/80" />
                     <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
                   </label>
                 </div>
@@ -1435,27 +1528,27 @@ export default function KaossPad() {
                 </span>
                 <Sliders className="w-2.5 h-2.5 opacity-40" />
               </div>
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {[
-                  { id: "off", icon: <Sliders className="w-3 h-3" />, symbol: "⊘", label: "OFF" },
-                  { id: "flanger", icon: <Waves className="w-3 h-3" />, symbol: "〰", label: "FLNG" },
-                  { id: "tremolo_slicer", icon: <Repeat className="w-3 h-3" />, symbol: "⎍", label: "SLC" },
-                  { id: "tape_flutter", icon: <Layers className="w-3 h-3" />, symbol: "📼", label: "TAPE" },
+                  { id: "off", icon: <Sliders className="w-3.5 h-3.5" />, symbol: "⊘", label: "OFF" },
+                  { id: "flanger", icon: <Waves className="w-3.5 h-3.5" />, symbol: "〰", label: "FLNG" },
+                  { id: "tremolo_slicer", icon: <Repeat className="w-3.5 h-3.5" />, symbol: "⎍", label: "SLC" },
+                  { id: "tape_flutter", icon: <Layers className="w-3.5 h-3.5" />, symbol: "📼", label: "TAPE" },
                 ].map((fx) => {
                   const isActive = activeModType === fx.id;
                   return (
                     <TactileButton
                       key={fx.id}
-                      size="sm"
+                      size="round"
+                      rounded="full"
                       active={isActive}
                       glowColor={theme.secondaryAccent}
                       ledColor={isActive ? theme.secondaryAccent : undefined}
                       symbol={fx.symbol}
                       icon={fx.icon}
-                      label={fx.label}
                       onClick={() => selectModType(fx.id as ModType)}
                       title={`Mod FX: ${fx.label}`}
-                      className="h-10 w-full"
+                      className="w-9 h-9 sm:w-10 sm:h-10 mx-auto"
                     />
                   );
                 })}

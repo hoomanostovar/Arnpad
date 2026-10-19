@@ -16,7 +16,8 @@ export interface TactileButtonProps extends React.ButtonHTMLAttributes<HTMLButto
   sublabel?: string;
   badge?: string;
   variant?: "synth" | "pad" | "record" | "amber" | "toggle" | "danger";
-  size?: "sm" | "md" | "lg" | "pad" | "icon";
+  size?: "sm" | "md" | "lg" | "pad" | "icon" | "round";
+  rounded?: "default" | "full" | "xl";
   children?: React.ReactNode;
 }
 
@@ -31,6 +32,7 @@ export default function TactileButton({
   badge,
   variant = "synth",
   size = "md",
+  rounded = "default",
   className,
   children,
   ...props
@@ -39,19 +41,31 @@ export default function TactileButton({
   const effectiveGlow = glowColor || (active ? "#f472b6" : "rgba(255,255,255,0.2)");
   const effectiveLed = ledColor || (active ? (glowColor || "#34d399") : "rgba(255,255,255,0.15)");
 
+  const roundingClass =
+    rounded === "full"
+      ? "rounded-full"
+      : "rounded-2xl";
+
   return (
-    <div className="relative group p-0.5 rounded-2xl bg-black/60 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_1px_1px_rgba(255,255,255,0.05)] border border-white/5">
+    <div
+      className={cn(
+        "relative group p-0.5 bg-black/75 shadow-[inset_0_2px_4px_rgba(0,0,0,0.95),0_1px_1px_rgba(255,255,255,0.06)] border border-white/10 flex items-center justify-center transition-all",
+        roundingClass
+      )}
+    >
       <button
         className={cn(
           // Hardware button base: tactile 3D travel, bevels, and micro-texture
           "relative w-full cursor-pointer select-none outline-none font-sans flex items-center justify-center transition-all duration-150 ease-out",
           // Physical 3D keycap sink on click
-          "active:translate-y-[2px] active:shadow-[0_1px_0_#050508,inset_0_3px_6px_rgba(0,0,0,0.8)]",
+          "active:translate-y-[2px] active:shadow-[0_1px_0_#050508,inset_0_3px_6px_rgba(0,0,0,0.85)]",
+          roundingClass,
           // Sizing classes
-          size === "sm" && "h-8 px-2 text-[10px] rounded-xl",
-          size === "md" && "h-11 px-3 text-xs rounded-xl",
-          size === "pad" && "h-12 w-full px-1.5 rounded-xl flex-col justify-between py-1",
-          size === "icon" && "w-11 h-11 rounded-xl p-0",
+          size === "sm" && "h-8 px-2 text-[10px]",
+          size === "md" && "h-11 px-3 text-xs",
+          size === "round" && "w-11 h-11 sm:w-12 sm:h-12 p-0 aspect-square",
+          size === "pad" && "h-12 w-full px-1.5 flex-col justify-between py-1",
+          size === "icon" && "w-11 h-11 p-0 aspect-square",
           // Tactile unpressed 3D keycap elevation
           !active && [
             "bg-gradient-to-b from-neutral-800/90 via-neutral-900/95 to-neutral-950 text-white/80",
@@ -90,18 +104,26 @@ export default function TactileButton({
         {...props}
       >
         {/* Top Metallic Keycap Sheen */}
-        <div className="absolute top-0.5 left-1 right-1 h-[2px] bg-white/20 rounded-full pointer-events-none blur-[0.5px]" />
+        <div className={cn(
+          "absolute top-0.5 h-[2px] bg-white/25 rounded-full pointer-events-none blur-[0.5px]",
+          rounded === "full" ? "left-3 right-3" : "left-2 right-2"
+        )} />
 
-        {/* Status LED Jewel in corner */}
-        <div className="absolute top-1 right-1.5 flex items-center justify-center pointer-events-none">
+        {/* Status LED Jewel */}
+        <div
+          className={cn(
+            "absolute pointer-events-none flex items-center justify-center",
+            rounded === "full" ? "top-1 left-1/2 -translate-x-1/2" : "top-1 right-1.5"
+          )}
+        >
           <div
             className={cn(
               "w-1.5 h-1.5 rounded-full transition-all duration-300 border border-black/40",
-              active ? "scale-110" : "opacity-30"
+              active ? "scale-125 animate-pulse" : "opacity-30"
             )}
             style={{
               backgroundColor: effectiveLed,
-              boxShadow: active ? `0 0 8px ${effectiveLed}, 0 0 2px ${effectiveLed}` : undefined,
+              boxShadow: active ? `0 0 8px ${effectiveLed}, 0 0 2px #ffffff` : undefined,
             }}
           />
         </div>
@@ -111,12 +133,23 @@ export default function TactileButton({
           children
         ) : (
           <div className="flex flex-col items-center justify-center w-full h-full gap-0.5">
-            {/* Top Symbol or Icon with animated hover bounce */}
-            <div className="flex items-center justify-center gap-1">
-              {symbol && (
+            {/* Top Symbol and Icon */}
+            <div className="flex items-center justify-center gap-1.5">
+              {symbol && !label && !sublabel ? (
+                // In pure iconic mode, symbol is a sleek companion to icon
                 <span
                   className={cn(
                     "text-[10px] font-mono select-none transition-transform duration-200 group-hover:scale-110",
+                    active ? "opacity-100 font-bold" : "opacity-45"
+                  )}
+                  style={active ? { color: effectiveGlow } : undefined}
+                >
+                  {symbol}
+                </span>
+              ) : symbol && (
+                <span
+                  className={cn(
+                    "text-xs font-mono select-none transition-transform duration-200 group-hover:scale-115",
                     active ? "opacity-100" : "opacity-50"
                   )}
                   style={active ? { color: effectiveGlow } : undefined}
@@ -127,8 +160,10 @@ export default function TactileButton({
               {icon && (
                 <div
                   className={cn(
-                    "transition-transform duration-200 group-hover:scale-110",
-                    active ? "scale-105" : "opacity-75"
+                    "transition-all duration-300 group-hover:scale-115 flex items-center justify-center",
+                    active
+                      ? "scale-115 drop-shadow-[0_0_8px_currentColor] animate-pulse"
+                      : "opacity-75 group-hover:opacity-100"
                   )}
                   style={active ? { color: effectiveGlow } : undefined}
                 >
@@ -137,14 +172,14 @@ export default function TactileButton({
               )}
             </div>
 
-            {/* Main Label */}
+            {/* Optional Label (rendered only if provided) */}
             {label && (
               <span className="text-[8px] font-mono font-black tracking-tighter leading-none uppercase truncate max-w-full">
                 {label}
               </span>
             )}
 
-            {/* Optional sublabel or badge */}
+            {/* Optional Sublabel */}
             {(sublabel || badge) && (
               <span
                 className={cn(
