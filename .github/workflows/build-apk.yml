@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Node dependencies
         run: pnpm install --no-frozen-lockfile
@@ -38,10 +38,12 @@ jobs:
           java-version: '17'
 
       - name: Accept Android SDK Licenses
-        run: yes | sdkmanager --licenses || true
+        run: |
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+          yes | sdkmanager --licenses || true
 
       - name: Sync Capacitor Android
-        run: npx cap sync android
+        run: pnpm exec cap sync android
 
       - name: Make Gradle executable
         run: chmod +x android/gradlew
